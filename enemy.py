@@ -85,33 +85,62 @@ class Ennemi(pygame.sprite.Sprite):
     # ----------------------------------------------------------
     def _patrouiller(self, obstacles):
         self.hitbox.x += self.direction_pat * VITESSE_ENNEMI
-        # Rebondit aux extrémités de la zone
-        if self.hitbox.x > self.pat_x2 or self.hitbox.x < self.pat_x1:
-            self.direction_pat *= -1
-        self._corriger_collisions(obstacles)
+
+        # --- Rebond sur les bornes de patrouille ---
+        # On compare le CENTRE de la hitbox pour éviter les décalages
+        if self.hitbox.centerx > self.pat_x2:
+            self.hitbox.centerx = self.pat_x2
+            self.direction_pat = -1          # force la direction, sans multiplier
+        elif self.hitbox.centerx < self.pat_x1:
+            self.hitbox.centerx = self.pat_x1
+            self.direction_pat = 1
+
+        # --- Collision avec les murs (séparée du rebond) ---
+        for obs in obstacles:
+            if self.hitbox.colliderect(obs.rect):
+                # Repousse l'ennemi hors du mur selon sa direction actuelle
+                if self.direction_pat > 0:
+                    self.hitbox.right = obs.rect.left
+                    self.direction_pat = -1
+                else:
+                    self.hitbox.left = obs.rect.right
+                    self.direction_pat = 1
+                break
+
         self.rect.center = self.hitbox.center
 
     def _chasser(self, joueur, obstacles):
-        """Se déplace vers Arno."""
+        """Se déplace vers Arno axe par axe pour éviter les murs."""
         dx = joueur.rect.centerx - self.rect.centerx
         dy = joueur.rect.centery - self.rect.centery
         dist = max(1, math.sqrt(dx*dx + dy*dy))
+
+        # Axe X
         self.hitbox.x += int(dx / dist * VITESSE_ENNEMI)
+        for obs in obstacles:
+            if self.hitbox.colliderect(obs.rect):
+                if dx > 0:
+                    self.hitbox.right = obs.rect.left
+                else:
+                    self.hitbox.left = obs.rect.right
+                break
+
+        # Axe Y
         self.hitbox.y += int(dy / dist * VITESSE_ENNEMI)
-        self._corriger_collisions(obstacles)
+        for obs in obstacles:
+            if self.hitbox.colliderect(obs.rect):
+                if dy > 0:
+                    self.hitbox.bottom = obs.rect.top
+                else:
+                    self.hitbox.top = obs.rect.bottom
+                break
+
         self.rect.center = self.hitbox.center
 
     def _attaquer(self, joueur):
         if self._distance(joueur) < self.DISTANCE_ATTAQUE and self.cooldown_attaque == 0:
             joueur.recevoir_degats(DEGATS_ENNEMI)
             self.cooldown_attaque = 60
-
-    def _corriger_collisions(self, obstacles):
-        for obs in obstacles:
-            if self.hitbox.colliderect(obs.rect):
-                self.direction_pat *= -1
-                self.hitbox.x -= self.direction_pat * 4
-                break
 
     # ----------------------------------------------------------
     def recevoir_degats(self, degats):
