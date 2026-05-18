@@ -22,8 +22,14 @@ class Joueur(pygame.sprite.Sprite):
         super().__init__()
 
         # --- Sprite visuel (dessiné en pixel art via du code) ---
-        self.image_normale = self._dessiner_arno(False)
-        self.image_attaque = self._dessiner_arno(True)
+        self.image_normale = self._dessiner_arno()
+        # 4 sprites d'attaque selon la direction (haut/bas/gauche/droite)
+        self.images_attaque = {
+            ( 1,  0): self._dessiner_arno_attaque("droite"),
+            (-1,  0): self._dessiner_arno_attaque("gauche"),
+            ( 0, -1): self._dessiner_arno_attaque("haut"),
+            ( 0,  1): self._dessiner_arno_attaque("bas"),
+        }
         self.image = self.image_normale
 
         # --- Position ---
@@ -47,32 +53,54 @@ class Joueur(pygame.sprite.Sprite):
     # ----------------------------------------------------------
     #  DESSIN DU SPRITE EN PIXEL ART (sans image externe)
     # ----------------------------------------------------------
-    def _dessiner_arno(self, en_attaque=False):
-        """Dessine Arno pixel par pixel — style banlieue."""
+    def _base_arno(self, surf, couleur_veste=None):
+        """Dessine le corps de base d'Arno sur une surface donnée."""
+        if couleur_veste is None:
+            couleur_veste = COULEUR_ARNO
+        pygame.draw.rect(surf, couleur_veste,     (8, 14, 16, 14))   # corps
+        pygame.draw.rect(surf, COULEUR_ARNO_SKIN, (11, 6, 10, 10))   # tête
+        pygame.draw.rect(surf, (20, 20, 20),       (8, 28,  6,  4))  # jambe gauche
+        pygame.draw.rect(surf, (20, 20, 20),       (18, 28, 6,  4))  # jambe droite
+        pygame.draw.rect(surf, (15, 70, 140),      (8, 14,  4, 10))  # bras gauche
+        pygame.draw.rect(surf, (15, 70, 140),      (20, 14, 4, 10))  # bras droit
+        pygame.draw.rect(surf, NOIR, (13, 10, 2, 2))                  # œil gauche
+        pygame.draw.rect(surf, NOIR, (17, 10, 2, 2))                  # œil droit
+        pygame.draw.rect(surf, (20, 20, 20), (9, 4, 14, 4))           # casquette
+        pygame.draw.rect(surf, (20, 20, 20), (7, 6, 4,  2))           # visière
+
+    def _dessiner_arno(self):
+        """Sprite normal (sans attaque)."""
         surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        self._base_arno(surf)
+        return surf
 
-        # Corps — veste bleue
-        couleur_veste = (255, 200, 0) if en_attaque else COULEUR_ARNO
-        pygame.draw.rect(surf, couleur_veste,       (8, 14, 16, 14))   # corps
-        pygame.draw.rect(surf, COULEUR_ARNO_SKIN,   (11, 6, 10, 10))   # tête
-        pygame.draw.rect(surf, (20, 20, 20),         (8, 28,  6,  4))  # jambe gauche
-        pygame.draw.rect(surf, (20, 20, 20),         (18, 28, 6,  4))  # jambe droite
-        pygame.draw.rect(surf, (15, 70, 140),        (8, 14,  4, 10))  # bras gauche
-        pygame.draw.rect(surf, (15, 70, 140),        (20, 14, 4, 10))  # bras droit
+    def _dessiner_arno_attaque(self, direction):
+        """
+        Sprite d'attaque selon la direction :
+        droite, gauche, haut, bas.
+        Le bras tendu + flash jaune pointent dans la bonne direction.
+        """
+        surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+        self._base_arno(surf, couleur_veste=(255, 200, 0))  # veste jaune pendant l'attaque
 
-        # Yeux
-        pygame.draw.rect(surf, NOIR, (13, 10, 2, 2))
-        pygame.draw.rect(surf, NOIR, (17, 10, 2, 2))
+        bras  = (15, 70, 140)
+        flash = COULEUR_ATTAQUE
 
-        # Casquette
-        pygame.draw.rect(surf, (20, 20, 20), (9, 4, 14, 4))
-        pygame.draw.rect(surf, (20, 20, 20), (7, 6, 4,  2))  # visière
+        if direction == "droite":
+            pygame.draw.rect(surf, bras,  (24, 16, 8, 4))   # bras tendu droite
+            pygame.draw.rect(surf, flash, (28, 13, 4, 8))   # poing
 
-        if en_attaque:
-            # Bras tendu vers la droite
-            pygame.draw.rect(surf, (15, 70, 140), (24, 14, 6, 4))
-            # Flash autour du poing
-            pygame.draw.rect(surf, COULEUR_ATTAQUE, (28, 12, 4, 8))
+        elif direction == "gauche":
+            pygame.draw.rect(surf, bras,  (0, 16, 8, 4))    # bras tendu gauche
+            pygame.draw.rect(surf, flash, (0, 13, 4, 8))    # poing
+
+        elif direction == "haut":
+            pygame.draw.rect(surf, bras,  (13, 0, 4, 10))   # bras tendu vers le haut
+            pygame.draw.rect(surf, flash, (11, 0, 8, 4))    # poing
+
+        elif direction == "bas":
+            pygame.draw.rect(surf, bras,  (13, 26, 4, 10))  # bras tendu vers le bas
+            pygame.draw.rect(surf, flash, (11, 28, 8, 4))   # poing
 
         return surf
 
@@ -192,16 +220,15 @@ class Joueur(pygame.sprite.Sprite):
     def _mettre_a_jour_sprite(self):
         # Clignotement pendant invincibilité
         if self.cooldown_invincible > 0 and self.cooldown_invincible % 6 < 3:
-            self.image = self._dessiner_arno_transparent()
+            surf = self.image_normale.copy()
+            surf.set_alpha(120)
+            self.image = surf
         elif self.attaque_active:
-            self.image = self.image_attaque
+            # Choisir le sprite d'attaque selon la dernière direction
+            cle = (int(self.derniere_dir.x), int(self.derniere_dir.y))
+            self.image = self.images_attaque.get(cle, self.images_attaque[(1, 0)])
         else:
             self.image = self.image_normale
-
-    def _dessiner_arno_transparent(self):
-        surf = self.image_normale.copy()
-        surf.set_alpha(120)
-        return surf
 
     # ----------------------------------------------------------
     #  AFFICHAGE UI — barre de vie
