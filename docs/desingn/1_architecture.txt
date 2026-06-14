@@ -1,0 +1,25 @@
+SYSTEM ARCHITECTURE - METROIDVANIA
+
+main.py
+   ↓
+Facade (facade.py)
+   ↓
+Zone Manager (map/__init__.py)
+   ↓
+Current Zone (zone_x.py)
+   ↓
+Player (player.py)
+   ↓
+Rendering (pygame display)
+
+DATA FLOW:
+
+Input keyboard → Player update → Collision check → Zone logic → Render frame → Screen update
+
+COMPONENTS:
+
+- main.py: starts game loop
+- facade.py: global game logic + camera + transitions
+- player.py: movement, combat, health
+- map/: all zones of the game
+- settings.py: constants (speed, gravity, etc.)
