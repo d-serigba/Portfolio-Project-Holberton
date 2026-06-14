@@ -23,3 +23,24 @@ COMPONENTS:
 - player.py: movement, combat, health
 - map/: all zones of the game
 - settings.py: constants (speed, gravity, etc.)
+
+
+graph TD
+
+    A[main.py<br>Game Loop] --> B[Facade<br>facade.py]
+
+    B --> C[Zone Manager<br>map/__init__.py]
+    B --> D[Player<br>player.py]
+
+    C --> E[Current Zone<br>zone_x.py]
+
+    E --> F[Platforms]
+    E --> G[Enemies]
+    E --> H[Checkpoints]
+    E --> I[Zone Exits]
+
+    D --> J[Movement System]
+    D --> K[Combat System]
+    D --> L[Health / Abilities]
+
+    B --> M[Rendering<br>pygame display]
