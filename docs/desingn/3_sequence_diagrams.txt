@@ -1,26 +1,14 @@
-SEQUENCE DIAGRAMS
+sequenceDiagram
 
-1. MOVEMENT
+    participant Player
+    participant MainLoop
+    participant Facade
+    participant Zone
+    participant Renderer
 
-Input (Q/D)
-→ Player.move()
-→ Collision check (Zone)
-→ Position update
-→ Render frame
-
-2. ATTACK
-
-Input (X/K)
-→ Player.attack()
-→ Create hitbox
-→ Check enemy collision
-→ Apply damage
-→ Enemy dies or survives
-
-3. ZONE CHANGE
-
-Player touches exit
-→ Facade detects collision
-→ Zone Manager loads new zone
-→ Player spawn updated
-→ New zone rendered
+    Player->>MainLoop: Press movement key
+    MainLoop->>Facade: Send input
+    Facade->>Zone: Check collisions
+    Zone-->>Facade: Collision result
+    Facade->>Renderer: Update frame
+    Renderer-->>Player: Display movement
