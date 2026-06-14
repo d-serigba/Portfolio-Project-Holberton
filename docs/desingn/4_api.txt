@@ -1,0 +1,27 @@
+API DESIGN
+
+EXTERNAL API:
+- pygame (game engine)
+- pygame.mixer (sound system)
+
+INTERNAL GAME API:
+
+- move_player(input)
+  input: keyboard keys
+  output: updated position
+
+- attack(direction)
+  input: direction
+  output: hitbox + damage
+
+- load_zone(zone_id)
+  input: zone name
+  output: zone object
+
+- switch_zone(exit)
+  input: exit trigger
+  output: new zone loaded
+
+- take_damage(amount)
+  input: damage value
+  output: updated health

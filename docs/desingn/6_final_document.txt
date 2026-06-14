@@ -1,0 +1,31 @@
+TECHNICAL DOCUMENTATION - METROIDVANIA
+
+1. USER STORIES
+(See task 0)
+
+2. ARCHITECTURE
+(main → facade → zones → player → rendering system)
+
+3. COMPONENTS
+(Player, Facade, Zone system, Map manager)
+
+4. SEQUENCE DIAGRAMS
+- Movement flow
+- Combat flow
+- Zone transition flow
+
+5. API DESIGN
+- pygame external API
+- internal game functions (move, attack, load_zone)
+
+6. SCM + QA
+- Git branching strategy
+- testing strategy
+- debug tools
+
+7. TECH JUSTIFICATION
+
+- Python + Pygame: fast 2D game development
+- Facade pattern: simplifies game loop management
+- Modular zones: easy Metroidvania expansion
+- No database: game is fully local

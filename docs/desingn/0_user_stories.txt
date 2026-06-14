@@ -1,0 +1,36 @@
+USER STORIES - METROIDVANIA (Arnaud Game)
+
+1. As a player, I want to move Arnaud in a 2D world, so that I can explore different zones.
+
+2. As a player, I want to jump and dash, so that I can navigate platforms and avoid obstacles.
+
+3. As a player, I want to attack enemies, so that I can survive combat.
+
+4. As a player, I want to unlock new abilities (double jump, missiles), so that I can access new areas.
+
+5. As a player, I want to collect Légos, so that I can increase my damage.
+
+6. As a player, I want checkpoints, so that I don’t restart from the beginning when I die.
+
+PRIORITY (MoSCoW)
+
+Must Have:
+- Movement
+- Jump / Dash
+- Combat
+- Zones system
+- Health system
+
+Should Have:
+- Checkpoints
+- Collectibles
+- Zone transitions
+
+Could Have:
+- Sound effects
+- Menu screen
+- Debug tools
+
+Won’t Have:
+- Multiplayer
+- Online features

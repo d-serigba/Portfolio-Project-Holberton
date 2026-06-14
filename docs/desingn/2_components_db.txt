@@ -1,0 +1,41 @@
+COMPONENTS AND DATA DESIGN
+
+PLAYER CLASS:
+- position (x, y)
+- velocity
+- health (3 lives / 5 hearts)
+- abilities (dash, double jump, etc.)
+
+Methods:
+- move()
+- jump()
+- attack()
+- take_damage()
+
+FACADE CLASS:
+- controls game loop
+- handles zone switching
+- manages collisions
+
+ZONE CLASS:
+- platforms
+- enemies
+- checkpoints
+- exits
+
+DATA STRUCTURE:
+
+Player state:
+{
+  "x": 100,
+  "y": 200,
+  "hp": 15,
+  "abilities": ["dash"]
+}
+
+Zone structure:
+{
+  "platforms": [],
+  "enemies": [],
+  "exits": []
+}
