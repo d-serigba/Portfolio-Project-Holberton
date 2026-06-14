@@ -24,3 +24,20 @@ Player touches exit
 → Zone Manager loads new zone
 → Player spawn updated
 → New zone rendered
+
+```mermaid
+sequenceDiagram
+
+    participant Player
+    participant MainLoop
+    participant Facade
+    participant Zone
+    participant Renderer
+
+    Player->>MainLoop: Press movement key
+    MainLoop->>Facade: Send input
+    Facade->>Zone: Check collisions
+    Zone-->>Facade: Collision result
+    Facade->>Renderer: Update frame
+    Renderer-->>Player: Display movement
+```
