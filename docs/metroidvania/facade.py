@@ -58,7 +58,8 @@ class Facade:
         # ── Coyote time ───────────────────────────────────────
         # Permet de sauter quelques frames après avoir quitté le sol
         self._coyote_frames = 0
-        self._COYOTE_MAX    = 8   # frames de grâce
+        self._COYOTE_MAX    = 8
+        self._cooldown_transition = 0   # frames de grâce
 
     # ==========================================================
     #  UPDATE — appelé chaque frame depuis main.py
@@ -68,6 +69,9 @@ class Facade:
             return
 
         zone = self.zones.zone
+
+        if self._cooldown_transition > 0:
+            self._cooldown_transition -= 1
 
         # ── Physique & input ───────────────────────────────────
         plateformes = zone.plateformes.sprites()
@@ -124,6 +128,8 @@ class Facade:
     # ==========================================================
     def _verifier_sorties(self):
         """Vérifie si Arnaud touche une sortie de la zone active."""
+        if self._cooldown_transition > 0:
+            return
         zone = self.zones.zone
         if not hasattr(zone, 'sorties'):
             return
@@ -172,6 +178,7 @@ class Facade:
         self.arnaud.hitbox.topleft   = (pos[0] + 2, pos[1])
         self.arnaud.vel_x            = 0
         self.arnaud.vel_y            = 0
+        self._cooldown_transition    = 90  # 1.5 sec
         self._historique.append(self.zones.nom_actuel or nom)
         print(f"[ZONE] → {nom} (spawn: {spawn})")
 

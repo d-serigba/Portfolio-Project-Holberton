@@ -1,0 +1,26 @@
+{
+  "zone_actuelle": "zone_s2",
+  "spawn": [
+    224,
+    160
+  ],
+  "coeurs": 5,
+  "vies": 3,
+  "missiles": 0,
+  "legos_collectes": 0,
+  "capacites": {
+    "double_saut": true,
+    "glissade": false,
+    "lego_sword": false,
+    "lego_blast": false,
+    "brise_mur": false,
+    "missiles": false
+  },
+  "checkpoints_actifs": [
+    "zone_s2_drapeau"
+  ],
+  "zones_visitees": [
+    "zone_a",
+    "zone_s2"
+  ]
+}
