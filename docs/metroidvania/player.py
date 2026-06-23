@@ -30,6 +30,7 @@ class Arnaud(pygame.sprite.Sprite):
         self.vel_y = 0       # vitesse verticale (+ = vers le bas)
         self.au_sol = False  # True si Arnaud touche un sol
         self.au_sol_precedent = False  # buffer pour coyote time
+        self.respawn_demande  = False  # True = perte de vie simple (pas game over)
         self.saut_demande = False  # flag anti re-saut
 
         # ── État ──────────────────────────────────────────────
@@ -39,7 +40,8 @@ class Arnaud(pygame.sprite.Sprite):
         # ── Sauts ─────────────────────────────────────────────
         # sauts_restants : 1 = un saut dispo, 0 = plus de saut
         # Le double saut ajoute +1 saut supplémentaire en l'air
-        self.sauts_restants  = 1   # saut de base inné
+        self.sauts_max       = 1   # 1 = saut simple, 2 = double saut
+        self.sauts_restants  = 1
         self.a_double_saut   = False
 
         # ── Esquive ───────────────────────────────────────────
@@ -121,10 +123,10 @@ class Arnaud(pygame.sprite.Sprite):
 
         # --- Saut ---
         saut_touche = touches[pygame.K_z] or touches[pygame.K_UP] or touches[pygame.K_SPACE]
-        if saut_touche and self.au_sol and not self.accroupi:
+        if saut_touche and self.au_sol and not self.accroupi and self.sauts_restants > 0:
             self.vel_y = FORCE_SAUT
             self.au_sol = False
-            self.sauts_restants = 1 if self.a_double_saut else 0
+            self.sauts_restants -= 1
 
         # --- Attaque ---
         if (touches[pygame.K_x] or touches[pygame.K_k]) and self.cooldown_attaque == 0:
@@ -210,7 +212,7 @@ class Arnaud(pygame.sprite.Sprite):
                     self.hitbox.bottom = sol.rect.top
                     self.vel_y  = 0
                     self.au_sol = True
-                    self.sauts_restants = 1 if self.a_double_saut else 0
+                    self.sauts_restants = self.sauts_max
                     if self.saut_demande:
                         self.saut_demande = False
                         self.vel_y = FORCE_SAUT
@@ -297,8 +299,10 @@ class Arnaud(pygame.sprite.Sprite):
 
     def _perdre_une_vie(self):
         self.vies -= 1
+        self.respawn_demande = False
         if self.vies > 0:
             self.coeurs = self.coeurs_max  # recharge les cœurs pour la prochaine vie
+            self.respawn_demande = True   # respawn au checkpoint, pas game over
 
     def est_mort(self):
         return self.vies <= 0
@@ -325,9 +329,8 @@ class Arnaud(pygame.sprite.Sprite):
             self.capacites[capacite] = True
             if capacite == "double_saut":
                 self.a_double_saut = True
-                # Si au sol, on prépare le double saut pour le prochain saut
-                if self.au_sol:
-                    self.sauts_restants = 1
+                self.sauts_max = 2
+                self.sauts_restants = 2
             elif capacite == "missiles":
                 self.missiles_max = MISSILES_MAX
 

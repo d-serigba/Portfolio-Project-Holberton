@@ -1,70 +1,88 @@
 # ============================================================
 #  ARNAUD METROIDVANIA — zone_5.py
+#  Zone avec mur plein et passage accroupi
 # ============================================================
-
 import pygame
 from settings import *
+from map.zone_base import ZoneBase
+from map.zone_a import EnnemBasique
 
 
-class Zone5:
-    LARGEUR_MONDE = 50 * TAILLE_TUILE
-    HAUTEUR_MONDE = 40 * TAILLE_TUILE
+class Zone5(ZoneBase):
+    NOM           = "Zone 5"
+    LARGEUR_MONDE = 40 * TAILLE_TUILE
+    HAUTEUR_MONDE = 20 * TAILLE_TUILE
 
     def __init__(self):
-        self.plateformes = pygame.sprite.Group()
-        self.murs        = pygame.sprite.Group()
-        self.ennemis     = pygame.sprite.Group()
-        self.legos       = pygame.sprite.Group()
-        self.checkpoints = []
-        self.missiles    = pygame.sprite.Group()
+        self._init_groupes()
         self._construire()
-        self.spawns = {
-            "defaut" : (self.LARGEUR_MONDE // 2, self.HAUTEUR_MONDE - 3 * TAILLE_TUILE),
-            "haut"   : (self.LARGEUR_MONDE // 2, 3 * TAILLE_TUILE),
-            "gauche" : (3 * TAILLE_TUILE, self.HAUTEUR_MONDE // 2),
-            "droite" : (self.LARGEUR_MONDE - 3 * TAILLE_TUILE, self.HAUTEUR_MONDE // 2),
-        }
-        self.sorties = []
 
     def _construire(self):
         T = TAILLE_TUILE
         W = self.LARGEUR_MONDE
         H = self.HAUTEUR_MONDE
-        self._plateforme(0, H - T*2, W, T*2)
-        self._plateforme(0, 0, W, T*2, GRIS_MUR)
-        self._mur(0, 0, T*2, H)
-        self._mur(W - T*2, 0, T*2, H)
 
-    def _plateforme(self, x, y, w, h, couleur=None):
-        if couleur is None:
-            couleur = GRIS_PLATEFORME
-        s = pygame.sprite.Sprite()
-        s.image = pygame.Surface((w, h))
-        s.image.fill(couleur)
-        pygame.draw.rect(s.image, (
-            min(couleur[0]+30,255),
-            min(couleur[1]+30,255),
-            min(couleur[2]+30,255)
-        ), (0, 0, w, 4))
-        s.rect = s.image.get_rect(topleft=(x, y))
-        self.plateformes.add(s)
+        # Sortie droite vers Z1
+        self.sorties = [
+            {"cote": "droite", "y": H-T*4, "taille": T*2,
+             "destination": "zone_1", "spawn": "depuis_z5"},
+        ]
 
-    def _mur(self, x, y, w, h):
-        s = pygame.sprite.Sprite()
-        s.image = pygame.Surface((w, h))
-        s.image.fill(GRIS_MUR)
-        for i in range(0, h, 16):
-            pygame.draw.line(s.image, (50,50,60), (0,i), (w,i), 1)
-        s.rect = s.image.get_rect(topleft=(x, y))
-        self.murs.add(s)
+        # ── MUR PLEIN — occupe 3/4 droits, du plafond au sol ───
+        mur_x = W // 4
+        # Mur du plafond jusqu'à H - T*4 (laisse gap accroupi en bas)
+        self._mur(mur_x, T*2, T*2, H - T*2 - T*4)
+
+        # ── PASSAGE ACCROUPI — gap de 2T en bas du mur plein ───
+        # (pas de mur entre H-T*4 et H-T*2 = passage)
+
+        # ── PLATEFORME LÉGO — haut gauche ──────────────────────
+        self._plateforme(T*2, T*5, T*5, T)
+        # Légo bleu dessus
+        lego = pygame.sprite.Sprite()
+        lego.image = self._dessiner_lego()
+        lego.rect  = lego.image.get_rect(topleft=(T*3, T*4))
+        self.legos.add(lego)
+
+        # ── ENNEMI — au sol à droite du mur plein ──────────────
+        EnnemBasique(
+            W - T*8, H - T*2 - 32,
+            mur_x + T*2, W - T*4
+        ).add(self.ennemis)
+
+        self._finaliser()
+
+        # Spawn depuis Z1 — au sol à droite
+        self.spawns["droite"] = (W - T*4, H - T*3)
+
+    def _dessiner_lego(self):
+        T = TAILLE_TUILE
+        surf = pygame.Surface((T, T), pygame.SRCALPHA)
+        couleur = (40, 100, 220)   # bleu
+        sombre  = (20, 60, 160)
+        pygame.draw.rect(surf, couleur, (0, 4, T, T-4))
+        pygame.draw.rect(surf, sombre,  (0, 0, T, 4))
+        pygame.draw.circle(surf, sombre, (T//4, 4), 4)
+        pygame.draw.circle(surf, sombre, (3*T//4, 4), 4)
+        return surf
 
     def update(self, joueur):
-        pass
+        for e in list(self.ennemis):
+            e.update(joueur, self.plateformes.sprites())
+            if e.est_mort(): e.kill()
+        zone_atk = joueur.get_zone_attaque()
+        if zone_atk:
+            for e in list(self.ennemis):
+                if zone_atk.colliderect(e.rect):
+                    e.recevoir_degats(joueur.degats)
+        # Légo
+        for l in list(self.legos):
+            if joueur.rect.colliderect(l.rect):
+                joueur.collecter_lego()
+                l.kill()
+        return super().update(joueur)
 
     def dessiner(self, ecran, cam_x, cam_y):
-        for groupe in [self.plateformes, self.murs, self.ennemis, self.legos]:
-            for s in groupe:
-                ecran.blit(s.image, (s.rect.x + cam_x, s.rect.y + cam_y))
-        f = pygame.font.SysFont("monospace", 28, bold=True)
-        t = f.render("zone_5 — squelette", True, (60, 60, 80))
-        ecran.blit(t, (ecran.get_width()//2 - t.get_width()//2, 40))
+        super().dessiner(ecran, cam_x, cam_y)
+        for e in self.ennemis:
+            ecran.blit(e.image, (e.rect.x + cam_x, e.rect.y + cam_y))

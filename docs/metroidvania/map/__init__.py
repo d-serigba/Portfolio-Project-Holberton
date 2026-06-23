@@ -26,6 +26,7 @@ from map.zone_14 import Zone14
 from map.zone_15 import Zone15
 from map.zone_16 import Zone16
 from map.zone_b  import ZoneB
+from map.zone_s2 import ZoneS2
 
 
 class GestionnaireZones:
@@ -61,6 +62,7 @@ class GestionnaireZones:
         "zone_15" : Zone15,
         "zone_16" : Zone16,
         "zone_b"  : ZoneB,
+        "zone_s2" : ZoneS2,
     }
 
     def __init__(self):

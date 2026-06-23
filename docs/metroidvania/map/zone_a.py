@@ -365,6 +365,7 @@ class ZoneA:
             "defaut" : (T*3, H - T*3),
             "gauche" : (T*3, H - T*3),
             "droite" : (W - T*5, H - T*3),
+            "depuis_z1" : (W - T*5, H - T*3),
         }
 
         # ── BORDURE HAUTE - apprend le SAUT
@@ -385,12 +386,11 @@ class ZoneA:
         Tourelle(T*22, H - T*2 - T, direction=-1).add(self.tourelles)
 
         # ── CHECKPOINT
-        cp = Checkpoint(T*28, H - T*2 - T*2)
-        self.checkpoints.append(cp)
+        # checkpoint supprimé — le drapeau sera dans les zones save
 
         # ── ZONE SECRETE
-        Plateforme(T*32, H - T*10, T*6, T).add(self.plateformes)
-        Lego(T*34, H - T*11, couleur_idx=0).add(self.legos)
+        Plateforme(T*26, H - T*10, T*6, T).add(self.plateformes)
+        Lego(T*28, H - T*11, couleur_idx=0).add(self.legos)
 
         # ── PORTE DROITE vers Zone 1
         self.sorties = [{
