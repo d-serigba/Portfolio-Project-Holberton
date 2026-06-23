@@ -35,7 +35,6 @@ class Facade:
 
     def __init__(self):
         self._historique = []  # pile des zones visitées
-        self._historique = []  # pile des zones visitées
         # ── Gestionnaire de zones ──────────────────────────────
         self.zones      = GestionnaireZones()
         spawn           = self.zones.charger(self.ZONE_DEPART)
@@ -85,6 +84,10 @@ class Facade:
         if hasattr(zone, 'update'):
             zone.update(self.arnaud)
 
+        # Verif drapeau de sauvegarde
+        if hasattr(zone, 'verifier_save'):
+            zone.verifier_save(self.arnaud, self.state)
+
         # ── Vérif transitions ─────────────────────────────────
         self._verifier_sorties()
 
@@ -92,9 +95,15 @@ class Facade:
         # ── Caméra ────────────────────────────────────────────
         self._mettre_a_jour_camera()
 
-        # ── Game over ─────────────────────────────────────────
+        # ── Perte de vie simple — respawn au checkpoint ────────
+        if self.arnaud.respawn_demande:
+            self.arnaud.respawn_demande = False
+            self._respawn_checkpoint()
+
+        # ── Game over — plus de vies, reset complet ────────────
         if self.arnaud.est_mort():
             self.game_over = True
+            self.state.effacer()
 
     # ==========================================================
     #  SAUT — appelé sur KEYDOWN depuis main.py
@@ -130,6 +139,32 @@ class Facade:
                 self.changer_zone(sortie["destination"], sortie["spawn"])
                 return
 
+    def _respawn_checkpoint(self):
+        """
+        Perte de vie simple — Arnaud respawn au dernier checkpoint
+        sauvegardé (ou ZA si jamais sauvegardé), garde ses capacités.
+        """
+        import os
+        from state_manager import FICHIER_SAVE
+
+        vies_actuelles = self.arnaud.vies
+        if os.path.exists(FICHIER_SAVE):
+            self.state.charger()
+            zone_save  = self.state.zone_depart
+            spawn_save = self.state.spawn_depart
+            pos = self.zones.changer(zone_save)
+            if spawn_save:
+                pos = tuple(spawn_save)
+        else:
+            pos = self.zones.changer(self.ZONE_DEPART)
+
+        self.arnaud.rect.topleft   = pos
+        self.arnaud.hitbox.topleft = (pos[0]+2, pos[1])
+        self.arnaud.vel_x = 0
+        self.arnaud.vel_y = 0
+        self.arnaud.vies  = vies_actuelles  # garde le compteur de vies
+        print(f"[RESPAWN] Vie perdue — retour au checkpoint ({self.arnaud.vies} vies restantes)")
+
     def changer_zone(self, nom, spawn="defaut"):
         """Change de zone et repositionne Arnaud."""
         pos = self.zones.changer(nom, spawn)
@@ -137,7 +172,6 @@ class Facade:
         self.arnaud.hitbox.topleft   = (pos[0] + 2, pos[1])
         self.arnaud.vel_x            = 0
         self.arnaud.vel_y            = 0
-        self._historique.append(self.zones.nom_actuel or nom)
         self._historique.append(self.zones.nom_actuel or nom)
         print(f"[ZONE] → {nom} (spawn: {spawn})")
 
@@ -251,9 +285,27 @@ class Facade:
     #  RECOMMENCER
     # ==========================================================
     def recommencer(self):
-        """Recharge la zone de départ et recrée Arnaud."""
-        spawn = self.zones.charger(self.ZONE_DEPART)
+        """
+        Recharge soit le dernier checkpoint sauvegardé,
+        soit la zone de départ si aucune sauvegarde n'existe.
+        Les capacités/missiles/légos sont réinitialisés (perdus au game over).
+        """
+        import os
+        from state_manager import FICHIER_SAVE
+
+        if os.path.exists(FICHIER_SAVE):
+            # Recharger le dernier checkpoint
+            self.state.charger()
+            zone_save   = self.state.zone_depart
+            spawn_save  = self.state.spawn_depart
+            spawn = self.zones.charger(zone_save)
+            if spawn_save:
+                spawn = tuple(spawn_save)
+        else:
+            # Pas de sauvegarde — repart de zone_a
+            spawn = self.zones.charger(self.ZONE_DEPART)
+
         self.arnaud         = Arnaud(*spawn)
         self.game_over      = False
         self._coyote_frames = 0
-        print("[JEU] Recommencé")
+        print(f"[JEU] Recommencé — zone: {self.zones.nom_actuel}")
