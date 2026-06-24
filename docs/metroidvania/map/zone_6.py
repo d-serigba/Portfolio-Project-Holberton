@@ -8,6 +8,7 @@ import random
 import math
 from settings import *
 from map.zone_base import ZoneBase
+from map.panneau import Panneau
 
 
 # ============================================================
@@ -255,6 +256,7 @@ class Zone6(ZoneBase):
         self.mini_boss    = None
         self.boss_vaincu  = False
         self.items        = pygame.sprite.Group()
+        self.panneaux     = pygame.sprite.Group()
         self._construire()
 
     def _construire(self):
@@ -304,7 +306,20 @@ class Zone6(ZoneBase):
                     self.mini_boss.hitbox.top - 30
                 ))
                 print("[BOSS] Mini-boss vaincu ! Légo Blast droppé !")
+                # Panneau Légo Blast
+                T = TAILLE_TUILE
+                Panneau(
+                    self.mini_boss.hitbox.centerx + T*2,
+                    self.mini_boss.hitbox.top - T*3,
+                    [
+                        "LEGO BLAST",
+                        "C / L = tirer",
+                        "balles infinies !"
+                    ]
+                ).add(self.panneaux)
 
+        # Panneaux
+        for p in self.panneaux: p.update(joueur)
         # Items au sol
         self.items.update()
         for item in list(self.items):
@@ -321,5 +336,6 @@ class Zone6(ZoneBase):
             self.mini_boss.dessiner(ecran, cam_x, cam_y)
             for r in self.mini_boss.rochers:
                 ecran.blit(r.image, (r.rect.x + cam_x, r.rect.y + cam_y))
+        for p in self.panneaux: p.dessiner(ecran, cam_x, cam_y)
         for item in self.items:
             ecran.blit(item.image, (item.rect.x + cam_x, item.rect.y + cam_y))

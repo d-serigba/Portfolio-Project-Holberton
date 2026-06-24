@@ -5,6 +5,7 @@
 import pygame
 from settings import *
 from map.zone_base import ZoneBase
+from map.panneau import Panneau
 from map.zone_a import Tourelle, EnnemBasique, MissileTourelle
 
 
@@ -66,6 +67,7 @@ class Zone3(ZoneBase):
         self.piques    = pygame.sprite.Group()
         self.powerups  = pygame.sprite.Group()
         self.tourelles = pygame.sprite.Group()
+        self.panneaux  = pygame.sprite.Group()
         self._construire()
 
     def _construire(self):
@@ -102,6 +104,13 @@ class Zone3(ZoneBase):
         # Power-up double saut
         self.powerups.add(PowerUpDoubleSaut(T*3, H - T*4))
 
+        # Panneau double saut
+        Panneau(T*3, H-T*3-T*2, [
+            "DOUBLE SAUT",
+            "Appuie sur Z",
+            "une 2eme fois en l air !"
+        ]).add(self.panneaux)
+
         self._finaliser()
 
         # Spawn depuis Z1 — au sol à droite
@@ -124,6 +133,7 @@ class Zone3(ZoneBase):
                 m.kill()
         self.piques.update(joueur)
         self.powerups.update(joueur)
+        for p in self.panneaux: p.update(joueur)
         zone_atk = joueur.get_zone_attaque()
         if zone_atk:
             for e in list(self.ennemis):
@@ -134,6 +144,7 @@ class Zone3(ZoneBase):
 
     def dessiner(self, ecran, cam_x, cam_y):
         super().dessiner(ecran, cam_x, cam_y)
+        for p in self.panneaux: p.dessiner(ecran, cam_x, cam_y)
         for groupe in [self.piques, self.powerups, self.tourelles, self.missiles, self.ennemis]:
             for s in groupe:
                 ecran.blit(s.image, (s.rect.x + cam_x, s.rect.y + cam_y))
