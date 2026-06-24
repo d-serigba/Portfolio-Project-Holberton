@@ -16,6 +16,7 @@ import pygame
 from settings import *
 from player   import Arnaud
 from map      import GestionnaireZones
+from map.zone_a import MissileTourelle
 from state_manager import StateManager
 
 
@@ -59,6 +60,7 @@ class Facade:
         # Permet de sauter quelques frames après avoir quitté le sol
         self._coyote_frames = 0
         self._COYOTE_MAX    = 8
+        self.projectiles    = pygame.sprite.Group()
         self._cooldown_transition = 0   # frames de grâce
 
     # ==========================================================
@@ -217,6 +219,10 @@ class Facade:
                 s = pygame.Surface((zone_atk.width, zone_atk.height), pygame.SRCALPHA)
                 s.fill((255, 220, 0, 100))
                 ecran.blit(s, (zone_atk.x + self._cam_x, zone_atk.y + self._cam_y))
+
+        # Projectiles
+        for p in self.projectiles:
+            ecran.blit(p.image, (p.rect.x + self._cam_x, p.rect.y + self._cam_y))
 
         # Arnaud
         ecran.blit(
