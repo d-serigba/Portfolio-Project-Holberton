@@ -64,7 +64,11 @@ def main():
                     # Légo Blast
                     if event.key in (pygame.K_c, pygame.K_l):
                         if jeu.arnaud.capacites["lego_blast"]:
-                            jeu.arnaud.trigger_lego_blast()
+                            proj = jeu.arnaud.trigger_lego_blast()
+                            if proj:
+                                from map.zone_a import MissileTourelle
+                                m = MissileTourelle(proj["x"], proj["y"], proj["dx"])
+                                jeu.projectiles.add(m)
 
                     # Debug
                     if event.key == pygame.K_F1:
