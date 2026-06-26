@@ -56,7 +56,7 @@ class Zone5(ZoneBase):
         EnnemBasique(W - T*6, H - T*2 - 32, W - T*10, W - T*4).add(self.ennemis)
 
         # Panneau accroupissement
-        Panneau(T*2, H-T*4-T*2, [
+        Panneau(W//4 + T*12, H-T*3-T*2, [
             "ACCROUPIR",
             "S / Fleche bas",
             "passe sous les obstacles"
