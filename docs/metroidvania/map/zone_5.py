@@ -4,6 +4,7 @@
 import pygame
 from settings import *
 from map.zone_base import ZoneBase
+from map.panneau import Panneau
 from map.zone_a import EnnemBasique
 
 class Zone5(ZoneBase):
@@ -13,6 +14,7 @@ class Zone5(ZoneBase):
 
     def __init__(self):
         self._init_groupes()
+        self.panneaux = pygame.sprite.Group()
         self._construire()
 
     def _construire(self):
@@ -53,6 +55,13 @@ class Zone5(ZoneBase):
         # Ennemi à droite du mur
         EnnemBasique(W - T*6, H - T*2 - 32, W - T*10, W - T*4).add(self.ennemis)
 
+        # Panneau accroupissement
+        Panneau(W//4 + T*12, H-T*3-T*2, [
+            "ACCROUPIR",
+            "S / Fleche bas",
+            "passe sous les obstacles"
+        ]).add(self.panneaux)
+
         self._finaliser()
         self.spawns["droite"] = (W - T*4, H - T*3)
 
@@ -75,6 +84,7 @@ class Zone5(ZoneBase):
             for e in list(self.ennemis):
                 if zone_atk.colliderect(e.rect):
                     e.recevoir_degats(joueur.degats)
+        for p in self.panneaux: p.update(joueur)
         for l in list(self.legos):
             if joueur.rect.colliderect(l.rect):
                 joueur.collecter_lego()
@@ -83,6 +93,7 @@ class Zone5(ZoneBase):
 
     def dessiner(self, ecran, cam_x, cam_y):
         super().dessiner(ecran, cam_x, cam_y)
+        for p in self.panneaux: p.dessiner(ecran, cam_x, cam_y)
         for e in self.ennemis:
             ecran.blit(e.image, (e.rect.x + cam_x, e.rect.y + cam_y))
         for l in self.legos:

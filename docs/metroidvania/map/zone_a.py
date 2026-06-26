@@ -11,6 +11,7 @@
 
 import pygame
 from settings import *
+from map.panneau import Panneau
 
 
 # ============================================================
@@ -334,6 +335,7 @@ class ZoneA:
         self.tourelles    = pygame.sprite.Group()
         self.missiles     = pygame.sprite.Group()
         self.legos        = pygame.sprite.Group()
+        self.panneaux     = pygame.sprite.Group()
         self.checkpoints  = []
 
         self._construire()
@@ -392,6 +394,17 @@ class ZoneA:
         Plateforme(T*26, H - T*10, T*6, T).add(self.plateformes)
         Lego(T*28, H - T*11, couleur_idx=0).add(self.legos)
 
+        # ── PANNEAUX TUTORIEL
+        Panneau(T*4, H-T*3-T*2, [
+            "SAUT",
+            "Z / ESPACE = sauter",
+            "(double saut si débloqué)"
+        ]).add(self.panneaux)
+        Panneau(T*10, H-T*3-T*2, [
+            "ATTAQUE",
+            "X / K = frapper"
+        ]).add(self.panneaux)
+
         # ── PORTE DROITE vers Zone 1
         self.sorties = [{
             "rect"        : pygame.Rect(W - T*2, H - T*4, T*2, T*4),
@@ -434,6 +447,9 @@ class ZoneA:
                 joueur.recevoir_degats(MissileTourelle.DEGATS)
                 missile.kill()
 
+        # Panneaux
+        for p in self.panneaux:
+            p.update(joueur)
         # Légos
         self.legos.update()
 
@@ -490,12 +506,16 @@ class ZoneA:
         for e in self.ennemis:
             ecran.blit(e.image, (e.rect.x + ox, e.rect.y + oy))
 
+        # Panneaux
+        for p in self.panneaux:
+            p.dessiner(ecran, ox, oy)
         # Légos
         for l in self.legos:
             ecran.blit(l.image, (l.rect.x + ox, l.rect.y + oy))
 
         # Zone secrète — hachures légères pour indiquer visuellement
-        self._dessiner_zone_secrete(ecran, ox, oy)
+        for p in self.panneaux:
+            p.dessiner(ecran, ox, oy)
 
     def _dessiner_zone_secrete(self, ecran, ox, oy):
         """Hachures discrètes sur la plateforme secrète."""
