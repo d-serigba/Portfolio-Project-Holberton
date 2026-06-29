@@ -1,4 +1,6 @@
 import pygame
+import os
+os.environ["SDL_AUDIODRIVER"] = "dummy"
 from pygame import mixer
 from fighter import Fighter
 
@@ -39,31 +41,31 @@ WIZARD_OFFSET = [112, 107]
 WIZARD_DATA = [FIGHTER_2_SIZE, FIGHTER_2_SCALE, FIGHTER_2_OFFSET]
 
 #load music and sounds
-pygame.mixer.music.load("asset/audio/music.mp3")
+pygame.mixer.music.load("~/Portfolio-Project-Holberton/docs/fighter_games/asset/audio/music.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1, 0.0, 5000)
-sword_fx = pygame.mixer.Sound("asset/audio/sword.wav")
+sword_fx = pygame.mixer.Sound("~/Portfolio-Project-Holberton/docs/fighter_games/asset/audio/sword.wav")
 sword_fx.set_volume(0.5)
-magic_fx = pygame.mixer.Sound("asset/audio/magic.wav")
+magic_fx = pygame.mixer.Sound("~/Portfolio-Project-Holberton/docs/fighter_games/asset/audio/magic.wav")
 magic_fx.set_volume(0.75)
 
 #load background image
 bg_image = pygame.image.load("docs/fighter_games/asset/images/background/background.png").convert_alpha()
 
 #load spritesheets
-fighter_1_sheet = pygame.image.load("asset/images/warrior/Sprites/warrior.png").convert_alpha()
-fighter_2_sheet = pygame.image.load("asset/images/wizard/Sprites/wizard.png").convert_alpha()
+fighter_1_sheet = pygame.image.load("~/Portfolio-Project-Holberton/docs/fighter_games/asset/warrior/warrior.png").convert_alpha()
+fighter_2_sheet = pygame.image.load("~/Portfolio-Project-Holberton/docs/fighter_games/asset/wizard/wizard.png").convert_alpha()
 
 #load victory image
-victory_img = pygame.image.load("asset/icons/victory.png").convert_alpha()
+victory_img = pygame.image.load("~/Portfolio-Project-Holberton/docs/fighter_games/asset/icone/victory.png").convert_alpha()
 
 #define number of steps in each animation
 WARRIOR_ANIMATION_STEPS = [10, 8, 1, 7, 7, 3, 7]
 WIZARD_ANIMATION_STEPS = [8, 8, 1, 8, 8, 3, 7]
 
 #define font
-count_font = pygame.font.Font("asset/fonts/turok.ttf", 80)
-score_font = pygame.font.Font("asset/fonts/turok.ttf", 30)
+count_font = pygame.font.Font("~/Portfolio-Project-Holberton/docs/fighter_games/asset/fonds/turok.ttf", 80)
+score_font = pygame.font.Font("~/Portfolio-Project-Holberton/docs/fighter_games/asset/fonds/turok.ttf", 30)
 
 #function for drawing text
 def draw_text(text, font, text_color, x, y):
