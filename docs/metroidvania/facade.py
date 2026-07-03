@@ -18,6 +18,7 @@ from player   import Arnaud
 from map      import GestionnaireZones
 from map.zone_a import MissileTourelle
 from state_manager import StateManager
+from api_client import ApiClient
 
 
 class Facade:
@@ -60,6 +61,10 @@ class Facade:
         # Permet de sauter quelques frames après avoir quitté le sol
         self._coyote_frames = 0
         self._COYOTE_MAX    = 8
+        self.api            = ApiClient()
+        self.score          = 0
+        self.ennemis_tues   = 0
+        self.debut_temps    = __import__("time").time()
         self.projectiles    = pygame.sprite.Group()
         self._cooldown_transition = 0   # frames de grâce
 
@@ -322,3 +327,16 @@ class Facade:
         self.game_over      = False
         self._coyote_frames = 0
         print(f"[JEU] Recommencé — zone: {self.zones.nom_actuel}")
+
+    def calculer_et_envoyer_score(self):
+        """Calcule le score final et l'envoie a l'API."""
+        import time
+        zones_visitees = len(self.state.etat.get("zones_visitees", []))
+        legos          = self.arnaud.legos_collectes
+        ennemis        = self.ennemis_tues
+        score = (zones_visitees * 100) + (ennemis * 50) + (legos * 200)
+        score = min(score, 9999)
+        completion = int((zones_visitees / 18) * 100)
+        temps_jeu  = int(time.time() - self.debut_temps)
+        self.api.envoyer_score(score, completion, temps_jeu)
+        return score

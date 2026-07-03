@@ -120,6 +120,7 @@ def main():
         pygame.display.flip()
         horloge.tick(FPS)
 
+    jeu.calculer_et_envoyer_score()
     pygame.quit()
     sys.exit()
 
