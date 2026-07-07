@@ -1,12 +1,14 @@
+import os
 import pygame
+from spritesheet import SpriteSheet
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, obstacle_sprites):
+    def __init__(self, pos, groups, obstacle_sprites, player_inventory=None):
         super().__init__(groups)
         self.image = pygame.Surface((48, 64))
         self.image.fill((0, 102, 204)) # Bleu Arnaud
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(-10, -26) 
+        self.hitbox = self.rect.inflate(-10, -26)
 
         # Déplacements
         self.direction = pygame.math.Vector2()
@@ -19,12 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_time = 0
 
         # Éléments de l'histoire (GDD)
-        self.inventory = {
-            "opinel": False,          
-            "epee_lego": False,       
-            "lunettes_baceux": False, 
-            "koenigsegg": False       
-        }
+        self.inventory = player_inventory if player_inventory else {"opinel": False, "epee_lego": False, "lunettes_baceux": False, "koenigsegg": False}
         self.current_weapon = None
 
         # Liaisons avec le monde
@@ -32,6 +29,40 @@ class Player(pygame.sprite.Sprite):
         self.interaction_sprites = None 
         self.create_attack = None # Fonction qu'on liera dans level.py
         self.destroy_attack = None # Fonction qu'on liera dans level.py
+
+
+        # Statistiques vitales d'Arnaud
+        self.max_health = 20
+        self.health = 20
+        
+        # Invulnérabilité temporaire après un coup
+        self.vulnerable = True
+        self.hurt_time = 0
+        self.invulnerability_duration = 5000 
+
+        # --- SYSTÈME GRAPHIQUE AVEC DECOUPE 16x16 ET ZOOM AUTOMATIQUE ---
+        sheet_path = 'graphics/arnaud_sheet.png'
+        
+        if os.path.exists(sheet_path):
+            self.spritesheet = SpriteSheet(sheet_path)
+            
+            # On découpe en 16x16 (taille d'origine de l'image). 
+            # Le scale=4 dans spritesheet.py va les propulser en 64x64 proprement !
+            self.animations = {
+                'down': [self.spritesheet.get_image(i, 0, 16, 16, scale=4) for i in range(4)],
+                'up': [self.spritesheet.get_image(i, 1, 16, 16, scale=4) for i in range(4)],
+                'left': [self.spritesheet.get_image(i, 2, 16, 16, scale=4) for i in range(4)],
+                'right': [self.spritesheet.get_image(i, 3, 16, 16, scale=4) for i in range(4)]
+            }
+            self.has_spritesheet = True
+            self.status = 'down'
+            self.frame_index = 0
+            self.animation_speed = 0.15
+            self.image = self.animations[self.status][self.frame_index]
+        else:
+            self.has_spritesheet = False
+            self.image = pygame.Surface((48, 64))
+            self.image.fill((220, 220, 220))
 
     def input(self):
         if self.is_attacking:
@@ -61,7 +92,11 @@ class Player(pygame.sprite.Sprite):
 
         # Touche d'action (Interaction PNJ)
         if keys[pygame.K_RETURN]:
-            self.check_npc()
+            if not hasattr(self, 'return_pressed') or not self.return_pressed:
+                self.check_npc()
+                self.return_pressed = True
+        else:
+            self.return_pressed = False
 
         # Touche d'attaque (Espace) - Seulement si on a l'Opinel !
         if keys[pygame.K_SPACE] and self.inventory["opinel"]:
@@ -92,10 +127,14 @@ class Player(pygame.sprite.Sprite):
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize()
 
+        # Axe X
         self.hitbox.x += self.direction.x * speed
         self.collision('horizontal')
+        
+        # Axe Y
         self.hitbox.y += self.direction.y * speed
         self.collision('vertical')
+        
         self.rect.center = self.hitbox.center
 
     def collision(self, direction):
@@ -113,4 +152,46 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.input()
         self.cooldowns()
+        self.check_invulnerability()
+        self.animate() # <-- NOUVEAU
         self.move(self.speed)
+
+    def get_damage(self, amount):
+        """Appelée par level.py quand Arnaud se fait toucher"""
+        if self.vulnerable:
+            self.health -= amount
+            self.vulnerable = False
+            self.hurt_time = pygame.time.get_ticks()
+            #self.ui.show_message(f"Aïe ! PV restants : {self.health}/{self.max_health}")
+            print(f"Aïe ! PV restants : {self.health}/{self.max_health}")
+
+    def check_invulnerability(self):
+        """Rend Arnaud à nouveau vulnérable après le délai d'anti-framerate"""
+        if not self.vulnerable:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.hurt_time >= self.invulnerability_duration:
+                self.vulnerable = True
+
+    def update(self):
+        self.input()
+        self.cooldowns()
+        self.check_invulnerability() # <-- APPEL DE LA MÉTHODE SÉCURISÉE
+        self.move(self.speed)
+
+    def animate(self):
+        if not self.has_spritesheet: 
+            return # On ne fait rien si on est en mode carré de secours
+
+        if self.direction.x > 0: self.status = 'right'
+        elif self.direction.x < 0: self.status = 'left'
+        elif self.direction.y > 0: self.status = 'down'
+        elif self.direction.y < 0: self.status = 'up'
+
+        if self.direction.magnitude() != 0:
+            self.frame_index += self.animation_speed
+            if self.frame_index >= len(self.animations[self.status]):
+                self.frame_index = 0
+        else:
+            self.frame_index = 0
+
+        self.image = self.animations[self.status][int(self.frame_index)]
