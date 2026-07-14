@@ -9,7 +9,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.Surface((48, 64))
         self.image.fill((200, 50, 50))
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(-10, -26)
+        self.hitbox = self.rect.inflate(-30, -40)
 
         # Statistiques
         self.health = 2

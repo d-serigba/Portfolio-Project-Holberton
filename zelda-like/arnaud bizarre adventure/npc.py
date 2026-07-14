@@ -1,13 +1,15 @@
 import pygame
 
 class NPC(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, obstacle_sprites):
+    def __init__(self, pos, groups, obstacle_sprites, player):
         super().__init__(groups)
         self.image = pygame.Surface((48, 64))
         self.image.fill((153, 51, 153))
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(-10, -26)
-        obstacle_sprites.add(self)
+        self.hitbox = self.rect.inflate(-30, -40)
+        self.obstacle_sprites = obstacle_sprites
+
+        self.player = player
 
         self.interaction_count = 0
         
@@ -45,8 +47,8 @@ class NPC(pygame.sprite.Sprite):
                 self.interaction_count = 1
                 
                 # Ajout de l'Opinel silencieusement
-                self.player_ref.inventory["opinel"] = True
-                self.player_ref.current_weapon = "opinel"
+                self.player.inventory["opinel"] = True
+                self.player.current_weapon = "opinel"
                 
                 # Affiche Texte 2 (la suite s'enchaîne toute seule !)
                 self.player_ref.ui.show_message([

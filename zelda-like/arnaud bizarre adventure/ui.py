@@ -7,7 +7,7 @@ class UI:
         self.queue = []
         self.current_text = ""
         self.text_timer = 0
-        self.duration = 4000 # Chaque message dure 4 secondes lors des cinématiques
+        self.duration = 5000 # Chaque message dure 5 secondes lors des cinématiques
         self.cinematic_active = False
 
     def show_message(self, text):

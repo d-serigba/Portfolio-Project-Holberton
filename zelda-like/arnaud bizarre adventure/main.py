@@ -4,7 +4,9 @@ from level import Level
 
 class Game:
     def __init__(self):
+        print("1. Début du script")
         pygame.init()
+        print("2. Pygame initialisé")
         self.screen = pygame.display.set_mode((960, 540)) # Taille fenetre
         pygame.display.set_caption("Arnaud's Bizarre Adventure")
         self.clock = pygame.time.Clock()
@@ -34,4 +36,5 @@ class Game:
 
 if __name__ == '__main__':
     game = Game()
+    print("3. Game créé")
     game.run()
