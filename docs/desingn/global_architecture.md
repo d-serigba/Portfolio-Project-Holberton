@@ -1,0 +1,1 @@
+```mermaid graph TD User([Utilisateur]) --> Pygame[Front-end Pygame] Pygame -->|HTTP/JSON| Flask[Back-end Flask] Flask -.->|Auth requests| JWT(JWT Security) Flask -->|ORM| SQLAlchemy[SQLAlchemy] SQLAlchemy -->|Scores| MySQL[(MySQL Database)] SQLAlchemy -->|Local Data| SQLite[(SQLite Database)] Pygame -.-> Games[Game Modules] ```
