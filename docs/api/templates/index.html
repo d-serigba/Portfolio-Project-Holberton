@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holberton Games - Accueil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Press Start 2P', cursive; overflow: hidden; }
+        .console { width: 800px; max-width: 95vw; background: #1a1a2e; border: 6px solid #4a4a6a; border-radius: 30px; padding: 30px 20px 20px; }
+        .screen { background: #0d0d0d; border: 8px solid #2c2c2c; border-radius: 20px; padding: 20px; min-height: 500px; display: flex; flex-direction: column; align-items: center; }
+        .hidden { display: none !important; }
+        .logo { font-size: 2rem; color: #00ff88; margin: 20px 0; text-align: center; }
+        .input-group { margin: 20px 0 10px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .input-group label { color: #00ff88; font-size: 0.7rem; margin-bottom: 10px; }
+        .pseudo-field { background: #0f0f1a; border: 2px solid #3a3a5a; color: #00ff88; padding: 10px 15px; font-family: 'Press Start 2P', cursive; font-size: 0.8rem; text-align: center; outline: none; width: 250px; margin-bottom: 12px; }
+        .retro-btn { background: #0f0f1a; border: 2px solid #00ff88; color: #00ff88; padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; cursor: pointer; margin-top: 10px; }
+        .retro-btn:hover { background: #00ff88; color: #0f0f1a; }
+        .retro-btn.secondary { border-color: #5a5a7a; color: #5a5a7a; font-size: 0.55rem; }
+        .auth-error { color: #ff4d4d; font-size: 0.55rem; margin-top: 10px; min-height: 14px; text-align: center; }
+        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 500px; margin: 30px 0; }
+        .game-card { background: #0f0f1a; border: 3px solid #3a3a5a; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #ccc; }
+        .game-card:hover, .game-card.active { border-color: #00ff88; box-shadow: 0 0 20px #00ff88; color: #fff; }
+        .game-card.disabled { opacity: 0.4; cursor: not-allowed; }
+        .game-cover { width: 100px; height: 100px; background: #2a2a3a; border: 2px solid #5a5a7a; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 8px; overflow: hidden; }
+        .game-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .game-title { font-size: 0.55rem; text-align: center; }
+        .game-status { font-size: 0.45rem; color: #ffb84d; margin-top: 4px; }
+        .info-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; color: #5a5a7a; font-size: 0.5rem; margin-top: auto; padding: 10px 0; border-top: 2px solid #2c2c2c; gap: 8px; }
+        .player-info { display: flex; align-items: center; gap: 15px; }
+        .highscore-btn, .logout-btn { background: none; border: 2px solid #3a3a5a; color: #5a5a7a; padding: 5px 8px; font-family: 'Press Start 2P', cursive; font-size: 0.45rem; cursor: pointer; }
+        .highscore-btn:hover, .logout-btn:hover { border-color: #00ff88; color: #00ff88; }
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #1a1a2e; border: 4px solid #00ff88; padding: 20px; width: 400px; max-width: 90%; color: #00ff88; font-size: 0.65rem; position: relative; }
+        .modal h2 { text-align: center; margin-bottom: 20px; font-size: 0.9rem; }
+        #scoreList { list-style: none; }
+        #scoreList li { padding: 8px 0; border-bottom: 1px solid #3a3a5a; display: flex; justify-content: space-between; }
+        .close-btn { position: absolute; top: 5px; right: 10px; cursor: pointer; background: none; border: none; color: #00ff88; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+<div class="console">
+    <div class="screen">
+        <div id="nameScreen">
+            <div class="logo">HOLBERTON<br>GAMES</div>
+            <div class="input-group">
+                <label for="usernameInput">NOM D'UTILISATEUR</label>
+                <input type="text" class="pseudo-field" id="usernameInput" maxlength="20" placeholder="PLAYER1" autocomplete="username">
+                <label for="passwordInput">MOT DE PASSE</label>
+                <input type="password" class="pseudo-field" id="passwordInput" maxlength="50" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button class="retro-btn" id="loginBtn">CONNEXION</button>
+            <button class="retro-btn secondary" id="registerBtn">CRÉER UN COMPTE</button>
+            <div class="auth-error" id="authError"></div>
+        </div>
+
+        <div id="menuScreen" class="hidden">
+            <div class="logo">HOLBERTON<br>GAMES</div>
+            <div class="games-grid" id="gamesGrid">
+                <div style="color:#5a5a7a; font-size:0.6rem; grid-column: 1 / -1; text-align:center;">Chargement des jeux...</div>
+            </div>
+            <div class="info-bar">
+                <div class="player-info">
+                    <span id="playerNameDisplay">---</span>
+                    <span>Score total: <span id="playerScoreDisplay">0</span></span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="highscore-btn" id="highscoreBtn">🏆 SCORES</button>
+                    <button class="logout-btn" id="logoutBtn">⏻ QUITTER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="highscoreModal" class="modal-overlay hidden">
+    <div class="modal">
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+        <h2>CLASSEMENT GLOBAL</h2>
+        <ul id="scoreList"><li>Chargement...</li></ul>
+    </div>
+</div>
+
+<script>
+    // Adapte cette URL si ton backend tourne ailleurs
+    const API_BASE = "http://127.0.0.1:5000/api";
+
+    const nameScreen         = document.getElementById('nameScreen');
+    const menuScreen         = document.getElementById('menuScreen');
+    const usernameInput      = document.getElementById('usernameInput');
+    const passwordInput      = document.getElementById('passwordInput');
+    const loginBtn           = document.getElementById('loginBtn');
+    const registerBtn        = document.getElementById('registerBtn');
+    const authError          = document.getElementById('authError');
+    const playerNameDisplay  = document.getElementById('playerNameDisplay');
+    const playerScoreDisplay = document.getElementById('playerScoreDisplay');
+    const highscoreBtn       = document.getElementById('highscoreBtn');
+    const logoutBtn          = document.getElementById('logoutBtn');
+    const highscoreModal     = document.getElementById('highscoreModal');
+    const closeModalBtn      = document.getElementById('closeModalBtn');
+    const scoreList          = document.getElementById('scoreList');
+    const gamesGrid          = document.getElementById('gamesGrid');
+
+    function getToken()    { return localStorage.getItem('jwt_token'); }
+    function getUsername() { return localStorage.getItem('username'); }
+    function setSession(token, username) {
+        localStorage.setItem('jwt_token', token);
+        localStorage.setItem('username', username);
+    }
+    function clearSession() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('username');
+    }
+    function authHeaders() { return { 'Authorization': 'Bearer ' + getToken() }; }
+
+    if (getToken() && getUsername()) showMenu(getUsername());
+
+    async function apiLogin(username, password) {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de connexion');
+        return data;
+    }
+
+    async function apiRegister(username, password) {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erreur lors de l'inscription");
+        return data;
+    }
+
+    loginBtn.addEventListener('click', async () => {
+        authError.textContent = '';
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        if (!username || !password) { authError.textContent = 'Nom et mot de passe requis'; return; }
+        try {
+            const { token, user } = await apiLogin(username, password);
+            setSession(token, user.username);
+            showMenu(user.username);
+        } catch (err) { authError.textContent = err.message; }
+    });
+
+    registerBtn.addEventListener('click', async () => {
+        authError.textContent = '';
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        if (!username || !password) { authError.textContent = 'Nom et mot de passe requis'; return; }
+        try {
+            await apiRegister(username, password);
+            const { token, user } = await apiLogin(username, password);
+            setSession(token, user.username);
+            showMenu(user.username);
+        } catch (err) { authError.textContent = err.message; }
+    });
+
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+
+    logoutBtn.addEventListener('click', () => {
+        clearSession();
+        menuScreen.classList.add('hidden');
+        nameScreen.classList.remove('hidden');
+        usernameInput.value = '';
+        passwordInput.value = '';
+    });
+
+    async function showMenu(username) {
+        nameScreen.classList.add('hidden');
+        menuScreen.classList.remove('hidden');
+        playerNameDisplay.textContent = username;
+        await Promise.all([loadGames(), refreshPlayerScore(username)]);
+    }
+
+    async function refreshPlayerScore(username) {
+        try {
+            const res = await fetch(`${API_BASE}/scores/classement`);
+            const totals = await res.json();
+            const mine = totals.find(t => t.username === username);
+            playerScoreDisplay.textContent = mine ? mine.total : 0;
+        } catch (err) { playerScoreDisplay.textContent = '?'; }
+    }
+
+    async function submitScore(jeuId, score, completion = 0, tempsJeu = 0) {
+        try {
+            const res = await fetch(`${API_BASE}/scores/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeaders() },
+                body: JSON.stringify({ jeu: jeuId, score, completion, temps_jeu: tempsJeu })
+            });
+            if (!res.ok) throw new Error('Échec de la soumission du score');
+            await refreshPlayerScore(getUsername());
+        } catch (err) { console.error(err); }
+    }
+    // Un jeu embarqué en iframe peut appeler: window.parent.submitScore('metroidvania', 1250)
+    window.submitScore = submitScore;
+
+    window.addEventListener('message', (event) => {
+        const msg = event.data;
+        if (msg && msg.type === 'GAME_SCORE') {
+            submitScore(msg.jeu, msg.score, msg.completion, msg.temps_jeu);
+        }
+    });
+
+    let cards = [];
+    let currentIndex = 0;
+
+    async function loadGames() {
+        try {
+            const res = await fetch(`${API_BASE}/jeux/`);
+            const jeux = await res.json();
+            renderGames(jeux);
+        } catch (err) {
+            gamesGrid.innerHTML = '<div style="color:#ff4d4d; font-size:0.6rem; grid-column: 1 / -1; text-align:center;">Impossible de charger les jeux</div>';
+        }
+    }
+
+    function renderGames(jeux) {
+        gamesGrid.innerHTML = '';
+        jeux.forEach((jeu) => {
+            const available = jeu.status === 'available';
+            const card = document.createElement('div');
+            card.className = 'game-card' + (available ? '' : ' disabled');
+            card.tabIndex = available ? 0 : -1;
+            card.dataset.gameId = jeu.id;
+            card.innerHTML = `
+                <div class="game-cover">${jeu.image ? `<img src="${jeu.image}" alt="${jeu.nom}">` : '🕹️'}</div>
+                <div class="game-title">${jeu.nom}</div>
+                ${available ? '' : '<div class="game-status">Bientôt disponible</div>'}
+            `;
+            if (available) {
+                card.addEventListener('click', () => openGame(jeu.id));
+                card.addEventListener('mouseenter', () => { currentIndex = cards.indexOf(card); updateActive(currentIndex); });
+                card.addEventListener('focus', () => { currentIndex = cards.indexOf(card); updateActive(currentIndex); });
+            }
+            gamesGrid.appendChild(card);
+        });
+        cards = Array.from(gamesGrid.querySelectorAll('.game-card'));
+        currentIndex = cards.findIndex(c => !c.classList.contains('disabled'));
+        if (currentIndex === -1) currentIndex = 0;
+        updateActive(currentIndex);
+    }
+
+    function openGame(jeuId) {
+        window.location.href = `${jeuId}.html?player=${encodeURIComponent(getUsername())}&token=${encodeURIComponent(getToken())}`;
+    }
+
+    function updateActive(index) {
+        cards.forEach((card, i) => card.classList.toggle('active', i === index));
+        if (cards[index] && !cards[index].classList.contains('disabled')) {
+            cards[index].focus({ preventScroll: true });
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (menuScreen.classList.contains('hidden') || cards.length === 0) return;
+        const enabledIndexes = cards.map((c, i) => c.classList.contains('disabled') ? null : i).filter(i => i !== null);
+        if (enabledIndexes.length === 0) return;
+        let pos = enabledIndexes.indexOf(currentIndex);
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            pos = (pos + 1) % enabledIndexes.length;
+            currentIndex = enabledIndexes[pos];
+            updateActive(currentIndex);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            pos = (pos - 1 + enabledIndexes.length) % enabledIndexes.length;
+            currentIndex = enabledIndexes[pos];
+            updateActive(currentIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const jeuId = cards[currentIndex]?.dataset.gameId;
+            if (jeuId) openGame(jeuId);
+        }
+    });
+
+    highscoreBtn.addEventListener('click', async () => {
+        highscoreModal.classList.remove('hidden');
+        await loadHighScores();
+    });
+    closeModalBtn.addEventListener('click', () => highscoreModal.classList.add('hidden'));
+    highscoreModal.addEventListener('click', (e) => { if (e.target === highscoreModal) highscoreModal.classList.add('hidden'); });
+
+    async function loadHighScores() {
+        scoreList.innerHTML = '<li>Chargement...</li>';
+        try {
+            const res = await fetch(`${API_BASE}/scores/classement`);
+            const scores = await res.json();
+            if (!scores.length) { scoreList.innerHTML = '<li>Aucun score pour le moment</li>'; return; }
+            scoreList.innerHTML = scores.map(s => `<li><span>${s.username}</span><span>${s.total}</span></li>`).join('');
+        } catch (err) { scoreList.innerHTML = '<li>Erreur de chargement</li>'; }
+    }
+</script>
+</body>
+</html>

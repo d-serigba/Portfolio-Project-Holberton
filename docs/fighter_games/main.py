@@ -10,6 +10,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 from pygame import mixer
 from fighter import Fighter
 from api_client import ApiClient
+from login_screen import run_login  # <--- IMPORT DE L'ÉCRAN DE CONNEXION UNIFIÉ
 
 mixer.init()
 pygame.init()
@@ -33,22 +34,16 @@ BLACK = (0, 0, 0)
 def get_asset_path(relative_path):
     return os.path.join(BASE_DIR, relative_path)
 
-# ── ENREGISTREMENT SÉCURISÉ DES SESSIONS (SSO) ──────────────
-pseudo_joueur = "Guest"
-token_joueur = None
-token_path = os.path.join(BASE_DIR, "save", "token.json")
+# ── INITIALISATION DE L'API & CONNEXION / SSO ──────────────
+api = ApiClient(nom_jeu="brawler")
 
-if os.path.exists(token_path):
-    try:
-        with open(token_path) as f:
-            data = json.load(f)
-            pseudo_joueur = data.get("user", "Guest")
-            token_joueur = data.get("token")
-            print(f"[Brawler] Session Hub chargée avec succès : {pseudo_joueur}")
-    except:
-        pass
+# On lance la procédure de connexion (SSO automatique si token.json existe, sinon écran de saisie)
+token_joueur, pseudo_joueur = run_login(screen)
 
-# Assets
+print(f"[Brawler] Connecté avec succès en tant que : {pseudo_joueur}")
+debut_temps = time.time()
+
+# ── CHARGEMENT DES ASSETS ──────────────────────────────────
 pygame.mixer.music.load(get_asset_path("asset/audio/music.mp3"))
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1, 0.0, 5000)
@@ -102,12 +97,6 @@ def draw_health_bar(health, x, y):
     pygame.draw.rect(screen, WHITE, (x-2, y-2, 404, 34))
     pygame.draw.rect(screen, RED, (x, y, 400, 30))
     pygame.draw.rect(screen, YELLOW, (x, y, int(400 * ratio), 30))
-
-# ── API ────────────────────────────────────────────────────
-api = ApiClient()
-api.token = token_joueur
-api.user = pseudo_joueur
-debut_temps = time.time()
 
 # ── ÉCRAN DE SÉLECTION MODE ────────────────────────────────
 def ecran_mode():

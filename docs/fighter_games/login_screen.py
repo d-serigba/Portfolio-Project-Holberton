@@ -1,5 +1,5 @@
 import pygame
-import requests
+from api_client import ApiClient  # On importe ton client API unifié
 
 # Couleurs
 WHITE = (255, 255, 255)
@@ -9,10 +9,17 @@ LIGHT_BLUE = (173, 216, 230)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-def run_login(screen, url_api="http://127.0.0.1:5000/login"):
+def run_login(screen):
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.time.Clock()
+
+    # Initialisation du client API
+    api = ApiClient(nom_jeu="brawler")
+
+    # Si un token SSO valide est déjà présent, on passe directement au jeu !
+    if api.connecte():
+        return api.token, api.user
 
     # Boîtes de saisie (x, y, largeur, hauteur)
     user_box = pygame.Rect(350, 200, 300, 40)
@@ -21,14 +28,13 @@ def run_login(screen, url_api="http://127.0.0.1:5000/login"):
 
     user_text = ""
     pass_text = ""
-    active_box = "user" # Qui a le focus au début
+    active_box = "user"  # Qui a le focus au début
     error_message = ""
     success_message = ""
-    token = None
 
     running = True
     while running:
-        screen.fill((30, 30, 40)) # Fond sombre stylé
+        screen.fill((30, 30, 40))  # Fond sombre stylé
 
         # Événements
         for event in pygame.event.get():
@@ -43,18 +49,15 @@ def run_login(screen, url_api="http://127.0.0.1:5000/login"):
                     active_box = "pass"
                 elif button_box.collidepoint(event.pos):
                     active_box = "submit"
-                    # Tentative de connexion
-                    try:
-                        response = requests.post(url_api, json={"username": user_text, "password": pass_text}, timeout=5)
-                        if response.status_code == 200:
-                            token = response.json().get("access_token")
-                            error_message = ""
-                            success_message = "Connexion réussie !"
-                            running = False # On ferme le login pour lancer le jeu
-                        else:
-                            error_message = "Identifiants incorrects."
-                    except requests.exceptions.ConnectionError:
-                        error_message = "Impossible de contacter l'API (Flask lancé ?)"
+                    
+                    # Tentative de connexion via le client API unifié
+                    success, response = api.login(user_text, pass_text)
+                    if success:
+                        error_message = ""
+                        success_message = "Connexion réussie !"
+                        running = False  # Ferme l'écran de login et lance le jeu
+                    else:
+                        error_message = response.get("error", "Identifiants incorrects.")
 
             if event.type == pygame.KEYDOWN:
                 if active_box == "user":
@@ -92,7 +95,7 @@ def run_login(screen, url_api="http://127.0.0.1:5000/login"):
         pygame.display.flip()
         clock.tick(30)
 
-    return token, user_text
+    return api.token, api.user
 
 def draw_text(text, font, color, surface, x, y):
     text_surface = font.render(text, True, color)
