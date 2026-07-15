@@ -26,7 +26,7 @@ JEUX = [
     },
     {
         "id"         : "zelda",
-        "nom"        : "Urban Explorer",
+        "nom"        : "arno_bizarre_adventur",
         "description": "Zelda-like urbain",
         "status"     : "coming_soon",
         "image"      : "/static/zelda.png"

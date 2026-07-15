@@ -1,5 +1,7 @@
 import pygame
 import requests
+import json
+import os
 
 # Couleurs
 WHITE = (255, 255, 255)
@@ -9,7 +11,10 @@ LIGHT_BLUE = (173, 216, 230)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-def run_login(screen, url_api="http://127.0.0.1:5000/login"):
+# Chemin unique et partagé pour le Token SSO (à la racine du dossier docs)
+TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "token.json")
+
+def run_login(screen, url_api="http://127.0.0.1:5000/api/auth/login"):
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.time.Clock()
@@ -28,7 +33,7 @@ def run_login(screen, url_api="http://127.0.0.1:5000/login"):
 
     running = True
     while running:
-        screen.fill((30, 30, 40)) # Fond sombre stylé
+        screen.fill((30, 30, 40)) # Fond sombre
 
         # Événements
         for event in pygame.event.get():
@@ -43,11 +48,29 @@ def run_login(screen, url_api="http://127.0.0.1:5000/login"):
                     active_box = "pass"
                 elif button_box.collidepoint(event.pos):
                     active_box = "submit"
+                    
                     # Tentative de connexion
                     try:
-                        response = requests.post(url_api, json={"username": user_text, "password": pass_text}, timeout=5)
+                        response = requests.post(
+                            url_api, 
+                            json={"username": user_text, "password": pass_text}, 
+                            timeout=5
+                        )
                         if response.status_code == 200:
-                            token = response.json().get("access_token")
+                            data = response.json()
+                            token = data.get("token") # Correction de la clé (anciennement access_token)
+                            user_info = data.get("user", {})
+                            username = user_info.get("username", user_text)
+                            
+                            # Sauvegarde du token pour le SSO (partagé avec le Metroidvania)
+                            try:
+                                os.makedirs(os.path.dirname(TOKEN_FILE), exist_ok=True)
+                                with open(TOKEN_FILE, "w") as f:
+                                    json.dump({"token": token, "user": username}, f)
+                                print(f"[SSO] Session sauvegardée pour {username} dans {TOKEN_FILE}")
+                            except Exception as e:
+                                print(f"[SSO] Erreur d'écriture du jeton : {e}")
+
                             error_message = ""
                             success_message = "Connexion réussie !"
                             running = False # On ferme le login pour lancer le jeu
