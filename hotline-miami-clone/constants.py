@@ -1,0 +1,7 @@
+import pygame
+
+WIDTH = 800
+HEIGHT = 600
+ENEMY_SPEED = 2
+ENEMY_FIST_RANGE = 50
+TILE_SIZE = 32

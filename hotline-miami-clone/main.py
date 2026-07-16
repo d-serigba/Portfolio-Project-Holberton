@@ -3,6 +3,9 @@ from settings import *
 from player import Player
 from level import Level
 from camera import Camera
+from constants import WIDTH, HEIGHT
+from constants import ENEMY_FIST_RANGE, ENEMY_SPEED
+from enemy import Enemy
 
 class Game:
     def __init__(self):
@@ -112,3 +115,7 @@ class Game:
             self.screen.blit(sprite.image, self.camera.apply(sprite))
         # ...
         pygame.display.flip()
+        
+if __name__ == "__main__":
+    game = Game()
+    game.run()
