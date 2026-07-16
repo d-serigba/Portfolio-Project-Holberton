@@ -1,105 +1,78 @@
-import requests
-import json
-import os
+# ============================================================
+#   METROIDVANIA — api_client_web.py
+#   Version WEB : remplace requests par le pont JS (postMessage).
+#
+#   Remplace api_client.py UNIQUEMENT pour le build pygbag.
+#   Même interface publique (token, user, connecte(), envoyer_score(),
+#   register(), login(), classement(), deconnecter()) donc facade.py
+#   n'a besoin D'AUCUNE MODIFICATION.
+#
+#   register()/login()/classement() ne sont PAS utilisées par facade.py
+#   (vérifié : seuls .token, .user et .envoyer_score() le sont), donc
+#   elles restent ici en versions "désactivées" par sécurité, au cas où.
+# ============================================================
 
-API_URL    = "http://localhost:5000"
-
-# Ajustement du chemin pour viser le même "token.json" partagé dans /docs/
-TOKEN_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "token.json")
+import sys
 
 
 class ApiClient:
 
     def __init__(self):
-        self.token   = None
-        self.user    = None
-        self._charger_token()
-
-    def _charger_token(self):
-        """Charge le token sauvegardé s'il existe."""
-        if os.path.exists(TOKEN_FILE):
-            try:
-                with open(TOKEN_FILE, "r") as f:
-                    data = json.load(f)
-                self.token = data.get("token")
-                self.user  = data.get("user")
-                print(f"[API Metroidvania] Session chargée pour : {self.user}")
-            except Exception as e:
-                print(f"[API Metroidvania] Échec lecture session : {e}")
-
-    def _sauvegarder_token(self):
-        """Sauvegarde le token localement dans l'espace partagé."""
-        try:
-            os.makedirs(os.path.dirname(TOKEN_FILE), exist_ok=True)
-            with open(TOKEN_FILE, "w") as f:
-                json.dump({"token": self.token, "user": self.user}, f)
-        except Exception as e:
-            print(f"[API Metroidvania] Échec sauvegarde session : {e}")
+        self.token = None
+        self.user = None
+        # Web : pas de fichier token.json à lire ici. La session (pseudo +
+        # token) est injectée depuis l'URL par main.py, puis affectée
+        # directement sur self.token / self.user par facade.py, exactement
+        # comme le fait déjà l'original avant l'appel à envoyer_score().
 
     def connecte(self):
         return self.token is not None
 
     def register(self, username, password):
-        try:
-            r = requests.post(f"{API_URL}/api/auth/register",
-                json={"username": username, "password": password}, timeout=3)
-            return r.status_code == 201, r.json()
-        except:
-            return False, {"error": "API non disponible"}
+        print("[API-WEB] register() non disponible dans le build web (géré par index.html)")
+        return False, {"error": "Non disponible en version web"}
 
     def login(self, username, password):
-        try:
-            r = requests.post(f"{API_URL}/api/auth/login",
-                json={"username": username, "password": password}, timeout=3)
-            if r.status_code == 200:
-                data = r.json()
-                self.token = data["token"]
-                self.user  = data["user"]["username"] if isinstance(data["user"], dict) else data["user"]
-                self._sauvegarder_token()
-                return True, data
-            return False, r.json()
-        except:
-            return False, {"error": "API non disponible"}
+        print("[API-WEB] login() non disponible dans le build web (géré par index.html)")
+        return False, {"error": "Non disponible en version web"}
 
     def envoyer_score(self, score, completion, temps_jeu):
-        """Envoie le score à l'API à la fin de la session."""
+        """
+        Remplace le POST HTTP par un postMessage vers la page parente
+        (index.html), qui fait le vrai fetch() vers l'API Flask en JS
+        (CORS géré côté JS, pas de `requests` possible en WASM).
+        """
         if not self.connecte():
-            print("[API] Pas connecté — score non envoyé")
+            print("[API-WEB] Pas connecté — score non envoyé")
             return False
+
+        if sys.platform != "emscripten":
+            print(f"[API-WEB local] Score simulé -> metroidvania: {score} pts "
+                  f"(completion={completion}%, temps={temps_jeu}s)")
+            return True
+
         try:
-            r = requests.post(
-                f"{API_URL}/api/scores/submit",
-                json={
-                    "jeu"       : "metroidvania",
-                    "score"     : min(score, 9999),
-                    "completion": completion,
-                    "temps_jeu" : temps_jeu
-                },
-                headers={"Authorization": f"Bearer {self.token}"},
-                timeout=3
-            )
-            if r.status_code == 201:
-                print(f"[API] Score envoyé : {score} pts")
-                return True
-            print(f"[API] Échec envoi score, statut : {r.status_code}")
-            return False
+            import platform
+            import json
+
+            message = {
+                "type": "GAME_SCORE",
+                "jeu": "metroidvania",
+                "score": min(score, 9999),
+                "completion": completion,
+                "temps_jeu": temps_jeu,
+            }
+            platform.window.parent.postMessage(json.dumps(message), "*")
+            print(f"[API-WEB] Score envoyé au parent : {message}")
+            return True
         except Exception as e:
-            print(f"[API] Erreur lors de l'envoi du score : {e}")
+            print(f"[API-WEB] Erreur lors de l'envoi du score : {e}")
             return False
 
     def classement(self):
-        """Récupère le classement global pour le Metroidvania."""
-        try:
-            r = requests.get(f"{API_URL}/api/scores/classement/metroidvania", timeout=3)
-            return r.json() if r.status_code == 200 else []
-        except:
-            return []
+        print("[API-WEB] classement() non disponible dans le build web (utilisez le classement du hub)")
+        return []
 
     def deconnecter(self):
         self.token = None
-        self.user  = None
-        if os.path.exists(TOKEN_FILE):
-            try:
-                os.remove(TOKEN_FILE)
-            except:
-                pass
+        self.user = None
