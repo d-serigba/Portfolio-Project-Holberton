@@ -1,6 +1,8 @@
-from flask import Flask, render_template  # Ajout de render_template pour servir le HTML
+import subprocess
+import os
+from flask import Flask, render_template
 from flask_jwt_extended import JWTManager
-from flask_cors import CORS  # Import de CORS
+from flask_cors import CORS
 from models import db
 from config import Config
 
@@ -10,7 +12,6 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Activation de CORS pour autoriser ton frontend à requêter l'API
     CORS(app)
 
     db.init_app(app)
@@ -25,19 +26,34 @@ def create_app():
     app.register_blueprint(jeux_bp,   url_prefix="/api/jeux")
 
     # ==================== ROUTES DU FRONT-END ====================
-    
-    # Route racine : affiche ton menu rétro (index.html)
+
     @app.route("/")
     def home():
         return render_template("index.html")
 
-    # Route dynamique : redirige vers les fichiers metroidvania.html et fighting.html
     @app.route("/<jeu_id>.html")
-    def lancer_jeu(jeu_id):
+    def page_jeu(jeu_id):
         try:
             return render_template(f"{jeu_id}.html")
         except:
             return "Page de jeu non trouvée", 404
+
+    @app.route("/lancer/<jeu_id>")
+    def lancer_jeu_local(jeu_id):
+        BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        jeux = {
+            "fighting"     : os.path.join(BASE, "fighter_games", "main.py"),
+            "metroidvania" : os.path.join(BASE, "metroidvania", "main.py"),
+            "arnaud"       : os.path.join(BASE, "arno_bizarre_adventure", "main.py"),
+        }
+        chemin = jeux.get(jeu_id)
+        if not chemin or not os.path.exists(chemin):
+            return {"error": "Jeu non trouvé"}, 404
+        try:
+            subprocess.Popen(["python3", chemin])
+            return {"status": "lancé"}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500
 
     # ==============================================================
 
