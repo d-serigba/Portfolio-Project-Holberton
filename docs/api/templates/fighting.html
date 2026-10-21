@@ -5,19 +5,55 @@
     <title>Versus Fighting</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { background: #0a0a0a; color: #00ff88; font-family: 'Press Start 2P', cursive; text-align: center; padding: 100px 20px; }
-        .box { background: #1a1a2e; border: 4px solid #4a4a6a; border-radius: 20px; padding: 40px; display: inline-block; max-width: 600px; }
-        code { background: #000; color: #ffb84d; padding: 15px; display: block; margin: 20px 0; font-size: 0.8rem; border-radius: 8px; border: 1px solid #3a3a5a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #00ff88; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .box { background: #1a1a2e; border: 4px solid #4a4a6a; border-radius: 20px; padding: 40px; display: inline-block; max-width: 600px; text-align: center; }
+        h2 { margin-bottom: 20px; }
+        p { font-size: 0.7rem; color: #ccc; margin: 20px 0; line-height: 1.6; }
+        .retro-btn { background: #0f0f1a; border: 2px solid #00ff88; color: #00ff88; padding: 14px 28px; font-family: 'Press Start 2P', cursive; font-size: 0.75rem; cursor: pointer; margin-top: 10px; }
+        .retro-btn:hover { background: #00ff88; color: #0f0f1a; }
+        .retro-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         a { color: #5a5a7a; text-decoration: none; font-size: 0.6rem; display: block; margin-top: 30px; }
         a:hover { color: #00ff88; }
+        .status { font-size: 0.6rem; margin-top: 15px; min-height: 16px; color: #ffb84d; }
     </style>
 </head>
 <body>
     <div class="box">
         <h2>VERSUS FIGHTING</h2>
-        <p style="font-size: 0.7rem; color: #ccc; margin-top: 20px; line-height: 1.6;">Copie et colle cette commande dans ton terminal pour lancer le jeu de combat :</p>
-        <code>python3 ../main_fighting.py</code> <!-- Ajuste le script de ton jeu de combat si besoin -->
+        <p>Clique sur le bouton pour lancer le jeu sur cette machine.</p>
+        <button class="retro-btn" id="playBtn" onclick="lancerJeu('fighting')">▶ JOUER</button>
+        <div class="status" id="status"></div>
         <a href="/">⇦ RETOUR AU MENU</a>
     </div>
+
+    <script>
+        async function lancerJeu(id) {
+            const btn = document.getElementById('playBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            btn.textContent = '⏳ LANCEMENT...';
+            status.textContent = '';
+            try {
+                const res = await fetch(`http://127.0.0.1:5000/lancer/${id}`);
+                const data = await res.json();
+                if (data.status === 'lancé') {
+                    btn.textContent = '✓ JEU LANCÉ !';
+                    status.textContent = 'Le jeu devrait apparaître dans quelques secondes.';
+                    status.style.color = '#00ff88';
+                } else {
+                    btn.textContent = '▶ JOUER';
+                    btn.disabled = false;
+                    status.textContent = 'Erreur : ' + data.error;
+                    status.style.color = '#ff4d4d';
+                }
+            } catch (e) {
+                btn.textContent = '▶ JOUER';
+                btn.disabled = false;
+                status.textContent = 'Impossible de contacter le serveur.';
+                status.style.color = '#ff4d4d';
+            }
+        }
+    </script>
 </body>
 </html>
