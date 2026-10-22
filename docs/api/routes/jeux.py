@@ -8,28 +8,28 @@ JEUX = [
         "nom"        : "Arnaud Metroidvania",
         "description": "Metroidvania pixel art — banlieue urbaine",
         "status"     : "available",
-        "image"      : "/static/metroidvania.png"
+        "image"      : "/static/metroidvania.jpg"
     },
     {
         "id"         : "fighting",
         "nom"        : "Versus Fighting",
         "description": "Jeu de combat 2D style Street Fighter",
         "status"     : "available",
-        "image"      : "/static/fighting.png"
+        "image"      : "/static/fighting.jpg"
     },
     {
         "id"         : "arnaud",
         "nom"        : "Arnaud's Bizarre Adventure",
         "description": "Zelda-like urbain",
         "status"     : "available",
-        "image"      : "/static/zelda.png"
+        "image"      : "/static/zelda.jpg"
     },
     {
-        "id"         : "platformer",
+        "id"         : "side scroling game",
         "nom"        : "City Runner",
         "description": "Platformer 2D urbain",
         "status"     : "coming_soon",
-        "image"      : "/static/platformer.png"
+        "image"      : "/static/2D side scroling game.jpg"
     },
 ]
 
