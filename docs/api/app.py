@@ -40,17 +40,19 @@ def create_app():
 
     @app.route("/lancer/<jeu_id>")
     def lancer_jeu_local(jeu_id):
-        BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Remonte jusqu'à la racine Portfolio-Project-Holberton/
+        BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         jeux = {
-            "fighting"     : os.path.join(BASE, "fighter_games", "main.py"),
-            "metroidvania" : os.path.join(BASE, "metroidvania", "main.py"),
-            "arnaud"       : os.path.join(BASE, "arno_bizarre_adventure", "main.py"),
+            "fighting"    : os.path.join(BASE, "docs", "fighter_games", "main.py"),
+            "metroidvania": os.path.join(BASE, "docs", "metroidvania", "main.py"),
+            "arnaud"      : os.path.join(BASE, "zelda-like", "arnaud bizarre adventure", "main.py"),
         }
         chemin = jeux.get(jeu_id)
         if not chemin or not os.path.exists(chemin):
-            return {"error": "Jeu non trouvé"}, 404
+            return {"error": f"Jeu non trouvé : {chemin}"}, 404
         try:
-            subprocess.Popen(["python3", chemin])
+            dossier = os.path.dirname(chemin)
+            subprocess.Popen(["python3", chemin], cwd=dossier)
             return {"status": "lancé"}, 200
         except Exception as e:
             return {"error": str(e)}, 500
