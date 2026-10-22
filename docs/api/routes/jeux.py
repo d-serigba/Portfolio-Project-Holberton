@@ -5,7 +5,7 @@ jeux_bp = Blueprint("jeux", __name__)
 JEUX = [
     {
         "id"         : "metroidvania",
-        "nom"        : "Arnaud's Bizarre Adventure",
+        "nom"        : "Arnaud Metroidvania",
         "description": "Metroidvania pixel art — banlieue urbaine",
         "status"     : "available",
         "image"      : "/static/metroidvania.png"
@@ -18,18 +18,18 @@ JEUX = [
         "image"      : "/static/fighting.png"
     },
     {
+        "id"         : "arnaud",
+        "nom"        : "Arnaud's Bizarre Adventure",
+        "description": "Zelda-like urbain",
+        "status"     : "available",
+        "image"      : "/static/zelda.png"
+    },
+    {
         "id"         : "platformer",
         "nom"        : "City Runner",
         "description": "Platformer 2D urbain",
         "status"     : "coming_soon",
         "image"      : "/static/platformer.png"
-    },
-    {
-        "id"         : "zelda",
-        "nom"        : "arno_bizarre_adventur",
-        "description": "Zelda-like urbain",
-        "status"     : "coming_soon",
-        "image"      : "/static/zelda.png"
     },
 ]
 
