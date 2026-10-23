@@ -34,8 +34,11 @@
             btn.disabled = true;
             btn.textContent = '⏳ LANCEMENT...';
             status.textContent = '';
+            const params = new URLSearchParams(window.location.search);
+            const token  = params.get("token") || "";
+            const player = params.get("player") || "";
             try {
-                const res = await fetch(`http://127.0.0.1:5000/lancer/${id}`);
+                const res = await fetch(`http://127.0.0.1:5000/lancer/${id}?token=${token}&player=${player}`);
                 const data = await res.json();
                 if (data.status === 'lancé') {
                     btn.textContent = '✓ JEU LANCÉ !';

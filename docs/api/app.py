@@ -1,6 +1,7 @@
 import subprocess
 import os
-from flask import Flask, render_template
+import json
+from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from models import db
@@ -40,7 +41,6 @@ def create_app():
 
     @app.route("/lancer/<jeu_id>")
     def lancer_jeu_local(jeu_id):
-        # Remonte jusqu'à la racine Portfolio-Project-Holberton/
         BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         jeux = {
             "fighting"    : os.path.join(BASE, "docs", "fighter_games", "main.py"),
@@ -51,6 +51,18 @@ def create_app():
         if not chemin or not os.path.exists(chemin):
             return {"error": f"Jeu non trouvé : {chemin}"}, 404
         try:
+            token  = request.args.get("token")
+            user   = request.args.get("player")
+            if token and user:
+                token_data = json.dumps({"token": token, "user": user})
+                tokens_jeux = {
+                    "metroidvania": os.path.join(BASE, "docs", "metroidvania", "save", "token.json"),
+                    "fighting"    : os.path.join(BASE, "docs", "fighter_games", "save", "token.json"),
+                }
+                if jeu_id in tokens_jeux:
+                    with open(tokens_jeux[jeu_id], "w") as f:
+                        f.write(token_data)
+
             dossier = os.path.dirname(chemin)
             subprocess.Popen(["python3", chemin], cwd=dossier)
             return {"status": "lancé"}, 200
