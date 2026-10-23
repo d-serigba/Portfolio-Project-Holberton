@@ -45,7 +45,7 @@ def create_app():
         jeux = {
             "fighting"    : os.path.join(BASE, "docs", "fighter_games", "main.py"),
             "metroidvania": os.path.join(BASE, "docs", "metroidvania", "main.py"),
-            "arnaud"      : os.path.join(BASE, "zelda-like", "arnaud bizarre adventure", "main.py"),
+            "arnaud"      : os.path.join(BASE, "docs", "zelda-like", "arnaud bizarre adventure", "main.py"),
         }
         chemin = jeux.get(jeu_id)
         if not chemin or not os.path.exists(chemin):
