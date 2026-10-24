@@ -83,8 +83,8 @@
 </div>
 
 <script>
-    // Adapte cette URL si ton backend tourne ailleurs
     const API_BASE = "http://127.0.0.1:5000/api";
+    const API_ROOT = "http://127.0.0.1:5000";
 
     const nameScreen         = document.getElementById('nameScreen');
     const menuScreen         = document.getElementById('menuScreen');
@@ -200,7 +200,6 @@
             await refreshPlayerScore(getUsername());
         } catch (err) { console.error(err); }
     }
-    // Un jeu embarqué en iframe peut appeler: window.parent.submitScore('metroidvania', 1250)
     window.submitScore = submitScore;
 
     window.addEventListener('message', (event) => {
@@ -231,8 +230,9 @@
             card.className = 'game-card' + (available ? '' : ' disabled');
             card.tabIndex = available ? 0 : -1;
             card.dataset.gameId = jeu.id;
+            const imgSrc = jeu.image ? `${API_ROOT}${jeu.image}` : '';
             card.innerHTML = `
-                <div class="game-cover">${jeu.image ? `<img src="${jeu.image}" alt="${jeu.nom}">` : '🕹️'}</div>
+                <div class="game-cover">${imgSrc ? `<img src="${imgSrc}" alt="${jeu.nom}">` : '🕹️'}</div>
                 <div class="game-title">${jeu.nom}</div>
                 ${available ? '' : '<div class="game-status">Bientôt disponible</div>'}
             `;
@@ -250,7 +250,7 @@
     }
 
     function openGame(jeuId) {
-        window.location.href = `${jeuId}.html?player=${encodeURIComponent(getUsername())}&token=${encodeURIComponent(getToken())}`;
+        window.location.href = `${API_ROOT}/${jeuId}.html?player=${encodeURIComponent(getUsername())}&token=${encodeURIComponent(getToken())}`;
     }
 
     function updateActive(index) {
