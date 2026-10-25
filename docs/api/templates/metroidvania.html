@@ -26,8 +26,8 @@
         <div class="status" id="status"></div>
         <a href="/">⇦ RETOUR AU MENU</a>
     </div>
-
     <script>
+        const API_ROOT = "https://portfolio-project-holberton.onrender.com";
         async function lancerJeu(id) {
             const btn = document.getElementById('playBtn');
             const status = document.getElementById('status');
@@ -38,7 +38,7 @@
             const token  = params.get("token") || "";
             const player = params.get("player") || "";
             try {
-                const res = await fetch(`http://127.0.0.1:5000/lancer/${id}?token=${token}&player=${player}`);
+                const res = await fetch(`${API_ROOT}/lancer/${id}?token=${token}&player=${player}`);
                 const data = await res.json();
                 if (data.status === 'lancé') {
                     btn.textContent = '✓ JEU LANCÉ !';

@@ -285,8 +285,8 @@
      ============================================================ -->
 <script>
     // ── CONFIG API ─────────────────────────────────────────────
-    const API_BASE = "http://127.0.0.1:5000/api";
-    const API_ROOT = "http://127.0.0.1:5000";
+    const API_BASE = "https://portfolio-project-holberton.onrender.com/api";
+    const API_ROOT = "https://portfolio-project-holberton.onrender.com";
 
     // ── RÉFÉRENCES DOM ─────────────────────────────────────────
     const nameScreen         = document.getElementById('nameScreen');
@@ -406,7 +406,6 @@
     }
 
     // ── SCORES ─────────────────────────────────────────────────
-    // Envoie un score à l'API (appelable depuis un jeu en iframe)
     async function submitScore(jeuId, score, completion = 0, tempsJeu = 0) {
         try {
             const res = await fetch(`${API_BASE}/scores/submit`, {
@@ -420,7 +419,6 @@
     }
     window.submitScore = submitScore;
 
-    // Écoute les messages postés par un jeu en iframe
     window.addEventListener('message', (event) => {
         const msg = event.data;
         if (msg && msg.type === 'GAME_SCORE') {
@@ -487,7 +485,7 @@
         }
     }
 
-    // Navigation clavier dans la grille (flèches + Entrée)
+    // Navigation clavier dans la grille
     document.addEventListener('keydown', (e) => {
         if (menuScreen.classList.contains('hidden') || cards.length === 0) return;
         const enabledIndexes = cards
