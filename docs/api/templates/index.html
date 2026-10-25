@@ -4,62 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holberton Games - Accueil</title>
+
+    <!-- Police pixel art rétro -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
     <style>
+        /* ── RESET & BASE ─────────────────────────────────────── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Press Start 2P', cursive; overflow: hidden; }
-        .console { width: 800px; max-width: 95vw; background: #1a1a2e; border: 6px solid #4a4a6a; border-radius: 30px; padding: 30px 20px 20px; }
-        .screen { background: #0d0d0d; border: 8px solid #2c2c2c; border-radius: 20px; padding: 20px; min-height: 500px; display: flex; flex-direction: column; align-items: center; }
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+        }
+
+        /* ── BOÎTIER CONSOLE ──────────────────────────────────── */
+        .console {
+            width: 800px;
+            max-width: 95vw;
+            background: #1a1a2e;
+            border: 6px solid #4a4a6a;
+            border-radius: 30px;
+            padding: 30px 20px 20px;
+        }
+
+        /* ── ÉCRAN INTÉRIEUR ──────────────────────────────────── */
+        .screen {
+            background: #0d0d0d;
+            border: 8px solid #2c2c2c;
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── UTILITAIRE ───────────────────────────────────────── */
         .hidden { display: none !important; }
-        .logo { font-size: 2rem; color: #00ff88; margin: 20px 0; text-align: center; }
-        .input-group { margin: 20px 0 10px; display: flex; flex-direction: column; align-items: center; width: 100%; }
-        .input-group label { color: #00ff88; font-size: 0.7rem; margin-bottom: 10px; }
-        .pseudo-field { background: #0f0f1a; border: 2px solid #3a3a5a; color: #00ff88; padding: 10px 15px; font-family: 'Press Start 2P', cursive; font-size: 0.8rem; text-align: center; outline: none; width: 250px; margin-bottom: 12px; }
-        .retro-btn { background: #0f0f1a; border: 2px solid #00ff88; color: #00ff88; padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 0.65rem; cursor: pointer; margin-top: 10px; }
+
+        /* ── LOGO ─────────────────────────────────────────────── */
+        .logo {
+            font-size: 2rem;
+            color: #00ff88;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* ── FORMULAIRE DE CONNEXION ──────────────────────────── */
+        .input-group {
+            margin: 20px 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .input-group label {
+            color: #00ff88;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+        }
+        .pseudo-field {
+            background: #0f0f1a;
+            border: 2px solid #3a3a5a;
+            color: #00ff88;
+            padding: 10px 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            text-align: center;
+            outline: none;
+            width: 250px;
+            margin-bottom: 12px;
+        }
+
+        /* ── BOUTONS ──────────────────────────────────────────── */
+        .retro-btn {
+            background: #0f0f1a;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.65rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
         .retro-btn:hover { background: #00ff88; color: #0f0f1a; }
         .retro-btn.secondary { border-color: #5a5a7a; color: #5a5a7a; font-size: 0.55rem; }
-        .auth-error { color: #ff4d4d; font-size: 0.55rem; margin-top: 10px; min-height: 14px; text-align: center; }
-        .games-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 500px; margin: 30px 0; }
-        .game-card { background: #0f0f1a; border: 3px solid #3a3a5a; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #ccc; }
-        .game-card:hover, .game-card.active { border-color: #00ff88; box-shadow: 0 0 20px #00ff88; color: #fff; }
+
+        /* ── MESSAGE D'ERREUR AUTH ────────────────────────────── */
+        .auth-error {
+            color: #ff4d4d;
+            font-size: 0.55rem;
+            margin-top: 10px;
+            min-height: 14px;
+            text-align: center;
+        }
+
+        /* ── GRILLE DES JEUX ──────────────────────────────────── */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin: 30px 0;
+        }
+        .game-card {
+            background: #0f0f1a;
+            border: 3px solid #3a3a5a;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: #ccc;
+        }
+        .game-card:hover,
+        .game-card.active { border-color: #00ff88; box-shadow: 0 0 20px #00ff88; color: #fff; }
         .game-card.disabled { opacity: 0.4; cursor: not-allowed; }
-        .game-cover { width: 100px; height: 100px; background: #2a2a3a; border: 2px solid #5a5a7a; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 8px; overflow: hidden; }
+        .game-cover {
+            width: 100px;
+            height: 100px;
+            background: #2a2a3a;
+            border: 2px solid #5a5a7a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
         .game-cover img { width: 100%; height: 100%; object-fit: cover; }
         .game-title { font-size: 0.55rem; text-align: center; }
         .game-status { font-size: 0.45rem; color: #ffb84d; margin-top: 4px; }
-        .info-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; color: #5a5a7a; font-size: 0.5rem; margin-top: auto; padding: 10px 0; border-top: 2px solid #2c2c2c; gap: 8px; }
+
+        /* ── BARRE D'INFOS JOUEUR ─────────────────────────────── */
+        .info-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #5a5a7a;
+            font-size: 0.5rem;
+            margin-top: auto;
+            padding: 10px 0;
+            border-top: 2px solid #2c2c2c;
+            gap: 8px;
+        }
         .player-info { display: flex; align-items: center; gap: 15px; }
-        .highscore-btn, .logout-btn { background: none; border: 2px solid #3a3a5a; color: #5a5a7a; padding: 5px 8px; font-family: 'Press Start 2P', cursive; font-size: 0.45rem; cursor: pointer; }
-        .highscore-btn:hover, .logout-btn:hover { border-color: #00ff88; color: #00ff88; }
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: #1a1a2e; border: 4px solid #00ff88; padding: 20px; width: 400px; max-width: 90%; color: #00ff88; font-size: 0.65rem; position: relative; }
+        .highscore-btn,
+        .logout-btn {
+            background: none;
+            border: 2px solid #3a3a5a;
+            color: #5a5a7a;
+            padding: 5px 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.45rem;
+            cursor: pointer;
+        }
+        .highscore-btn:hover,
+        .logout-btn:hover { border-color: #00ff88; color: #00ff88; }
+
+        /* ── MODAL CLASSEMENT ─────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal {
+            background: #1a1a2e;
+            border: 4px solid #00ff88;
+            padding: 20px;
+            width: 400px;
+            max-width: 90%;
+            color: #00ff88;
+            font-size: 0.65rem;
+            position: relative;
+        }
         .modal h2 { text-align: center; margin-bottom: 20px; font-size: 0.9rem; }
         #scoreList { list-style: none; }
-        #scoreList li { padding: 8px 0; border-bottom: 1px solid #3a3a5a; display: flex; justify-content: space-between; }
-        .close-btn { position: absolute; top: 5px; right: 10px; cursor: pointer; background: none; border: none; color: #00ff88; font-size: 1.2rem; }
+        #scoreList li {
+            padding: 8px 0;
+            border-bottom: 1px solid #3a3a5a;
+            display: flex;
+            justify-content: space-between;
+        }
+        .close-btn {
+            position: absolute;
+            top: 5px; right: 10px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #00ff88;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
+
+<!-- ============================================================
+     BOÎTIER CONSOLE — contient tout l'UI
+     ============================================================ -->
 <div class="console">
     <div class="screen">
+
+        <!-- ── ÉCRAN 1 : CONNEXION / INSCRIPTION ─────────────── -->
         <div id="nameScreen">
             <div class="logo">HOLBERTON<br>GAMES</div>
+
+            <!-- Champs username et password -->
             <div class="input-group">
                 <label for="usernameInput">NOM D'UTILISATEUR</label>
-                <input type="text" class="pseudo-field" id="usernameInput" maxlength="20" placeholder="PLAYER1" autocomplete="username">
+                <input type="text" class="pseudo-field" id="usernameInput"
+                       maxlength="20" placeholder="PLAYER1" autocomplete="username">
+
                 <label for="passwordInput">MOT DE PASSE</label>
-                <input type="password" class="pseudo-field" id="passwordInput" maxlength="50" placeholder="••••••••" autocomplete="current-password">
+                <input type="password" class="pseudo-field" id="passwordInput"
+                       maxlength="50" placeholder="••••••••" autocomplete="current-password">
             </div>
+
+            <!-- Boutons d'action -->
             <button class="retro-btn" id="loginBtn">CONNEXION</button>
             <button class="retro-btn secondary" id="registerBtn">CRÉER UN COMPTE</button>
+
+            <!-- Message d'erreur (vide par défaut) -->
             <div class="auth-error" id="authError"></div>
         </div>
 
+        <!-- ── ÉCRAN 2 : MENU DES JEUX (caché jusqu'à connexion) ─ -->
         <div id="menuScreen" class="hidden">
             <div class="logo">HOLBERTON<br>GAMES</div>
+
+            <!-- Grille des jeux — remplie dynamiquement par JS -->
             <div class="games-grid" id="gamesGrid">
-                <div style="color:#5a5a7a; font-size:0.6rem; grid-column: 1 / -1; text-align:center;">Chargement des jeux...</div>
+                <div style="color:#5a5a7a; font-size:0.6rem; grid-column: 1 / -1; text-align:center;">
+                    Chargement des jeux...
+                </div>
             </div>
+
+            <!-- Barre infos : pseudo, score total, boutons scores/quitter -->
             <div class="info-bar">
                 <div class="player-info">
                     <span id="playerNameDisplay">---</span>
@@ -71,21 +263,32 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
+<!-- ============================================================
+     MODAL CLASSEMENT — s'affiche par-dessus tout
+     ============================================================ -->
 <div id="highscoreModal" class="modal-overlay hidden">
     <div class="modal">
         <button class="close-btn" id="closeModalBtn">&times;</button>
         <h2>CLASSEMENT GLOBAL</h2>
-        <ul id="scoreList"><li>Chargement...</li></ul>
+        <ul id="scoreList">
+            <li>Chargement...</li>
+        </ul>
     </div>
 </div>
 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
 <script>
+    // ── CONFIG API ─────────────────────────────────────────────
     const API_BASE = "http://127.0.0.1:5000/api";
     const API_ROOT = "http://127.0.0.1:5000";
 
+    // ── RÉFÉRENCES DOM ─────────────────────────────────────────
     const nameScreen         = document.getElementById('nameScreen');
     const menuScreen         = document.getElementById('menuScreen');
     const usernameInput      = document.getElementById('usernameInput');
@@ -102,6 +305,7 @@
     const scoreList          = document.getElementById('scoreList');
     const gamesGrid          = document.getElementById('gamesGrid');
 
+    // ── SESSION (stockée dans localStorage) ───────────────────
     function getToken()    { return localStorage.getItem('jwt_token'); }
     function getUsername() { return localStorage.getItem('username'); }
     function setSession(token, username) {
@@ -112,10 +316,14 @@
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('username');
     }
-    function authHeaders() { return { 'Authorization': 'Bearer ' + getToken() }; }
+    function authHeaders() {
+        return { 'Authorization': 'Bearer ' + getToken() };
+    }
 
+    // Si déjà connecté (token en mémoire), on passe directement au menu
     if (getToken() && getUsername()) showMenu(getUsername());
 
+    // ── AUTHENTIFICATION ───────────────────────────────────────
     async function apiLogin(username, password) {
         const res = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
@@ -138,6 +346,7 @@
         return data;
     }
 
+    // Clic sur CONNEXION
     loginBtn.addEventListener('click', async () => {
         authError.textContent = '';
         const username = usernameInput.value.trim();
@@ -150,6 +359,7 @@
         } catch (err) { authError.textContent = err.message; }
     });
 
+    // Clic sur CRÉER UN COMPTE
     registerBtn.addEventListener('click', async () => {
         authError.textContent = '';
         const username = usernameInput.value.trim();
@@ -163,8 +373,12 @@
         } catch (err) { authError.textContent = err.message; }
     });
 
-    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+    // Entrée clavier sur le champ mot de passe
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
 
+    // Clic sur QUITTER — déconnexion
     logoutBtn.addEventListener('click', () => {
         clearSession();
         menuScreen.classList.add('hidden');
@@ -173,6 +387,7 @@
         passwordInput.value = '';
     });
 
+    // ── MENU PRINCIPAL ─────────────────────────────────────────
     async function showMenu(username) {
         nameScreen.classList.add('hidden');
         menuScreen.classList.remove('hidden');
@@ -180,6 +395,7 @@
         await Promise.all([loadGames(), refreshPlayerScore(username)]);
     }
 
+    // Récupère et affiche le score total du joueur connecté
     async function refreshPlayerScore(username) {
         try {
             const res = await fetch(`${API_BASE}/scores/classement`);
@@ -189,6 +405,8 @@
         } catch (err) { playerScoreDisplay.textContent = '?'; }
     }
 
+    // ── SCORES ─────────────────────────────────────────────────
+    // Envoie un score à l'API (appelable depuis un jeu en iframe)
     async function submitScore(jeuId, score, completion = 0, tempsJeu = 0) {
         try {
             const res = await fetch(`${API_BASE}/scores/submit`, {
@@ -202,6 +420,7 @@
     }
     window.submitScore = submitScore;
 
+    // Écoute les messages postés par un jeu en iframe
     window.addEventListener('message', (event) => {
         const msg = event.data;
         if (msg && msg.type === 'GAME_SCORE') {
@@ -209,6 +428,7 @@
         }
     });
 
+    // ── CHARGEMENT ET AFFICHAGE DES JEUX ───────────────────────
     let cards = [];
     let currentIndex = 0;
 
@@ -222,6 +442,7 @@
         }
     }
 
+    // Crée les cartes de jeux dynamiquement
     function renderGames(jeux) {
         gamesGrid.innerHTML = '';
         jeux.forEach((jeu) => {
@@ -230,29 +451,35 @@
             card.className = 'game-card' + (available ? '' : ' disabled');
             card.tabIndex = available ? 0 : -1;
             card.dataset.gameId = jeu.id;
+
+            // Image servie par Flask via /static/
             const imgSrc = jeu.image ? `${API_ROOT}${jeu.image}` : '';
             card.innerHTML = `
                 <div class="game-cover">${imgSrc ? `<img src="${imgSrc}" alt="${jeu.nom}">` : '🕹️'}</div>
                 <div class="game-title">${jeu.nom}</div>
                 ${available ? '' : '<div class="game-status">Bientôt disponible</div>'}
             `;
+
             if (available) {
                 card.addEventListener('click', () => openGame(jeu.id));
                 card.addEventListener('mouseenter', () => { currentIndex = cards.indexOf(card); updateActive(currentIndex); });
-                card.addEventListener('focus', () => { currentIndex = cards.indexOf(card); updateActive(currentIndex); });
+                card.addEventListener('focus',      () => { currentIndex = cards.indexOf(card); updateActive(currentIndex); });
             }
             gamesGrid.appendChild(card);
         });
+
         cards = Array.from(gamesGrid.querySelectorAll('.game-card'));
         currentIndex = cards.findIndex(c => !c.classList.contains('disabled'));
         if (currentIndex === -1) currentIndex = 0;
         updateActive(currentIndex);
     }
 
+    // Redirige vers la page du jeu avec token et pseudo en paramètres
     function openGame(jeuId) {
         window.location.href = `${API_ROOT}/${jeuId}.html?player=${encodeURIComponent(getUsername())}&token=${encodeURIComponent(getToken())}`;
     }
 
+    // Met en surbrillance la carte active
     function updateActive(index) {
         cards.forEach((card, i) => card.classList.toggle('active', i === index));
         if (cards[index] && !cards[index].classList.contains('disabled')) {
@@ -260,11 +487,15 @@
         }
     }
 
+    // Navigation clavier dans la grille (flèches + Entrée)
     document.addEventListener('keydown', (e) => {
         if (menuScreen.classList.contains('hidden') || cards.length === 0) return;
-        const enabledIndexes = cards.map((c, i) => c.classList.contains('disabled') ? null : i).filter(i => i !== null);
+        const enabledIndexes = cards
+            .map((c, i) => c.classList.contains('disabled') ? null : i)
+            .filter(i => i !== null);
         if (enabledIndexes.length === 0) return;
         let pos = enabledIndexes.indexOf(currentIndex);
+
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
             e.preventDefault();
             pos = (pos + 1) % enabledIndexes.length;
@@ -282,12 +513,15 @@
         }
     });
 
+    // ── MODAL CLASSEMENT ───────────────────────────────────────
     highscoreBtn.addEventListener('click', async () => {
         highscoreModal.classList.remove('hidden');
         await loadHighScores();
     });
     closeModalBtn.addEventListener('click', () => highscoreModal.classList.add('hidden'));
-    highscoreModal.addEventListener('click', (e) => { if (e.target === highscoreModal) highscoreModal.classList.add('hidden'); });
+    highscoreModal.addEventListener('click', (e) => {
+        if (e.target === highscoreModal) highscoreModal.classList.add('hidden');
+    });
 
     async function loadHighScores() {
         scoreList.innerHTML = '<li>Chargement...</li>';
@@ -295,7 +529,9 @@
             const res = await fetch(`${API_BASE}/scores/classement`);
             const scores = await res.json();
             if (!scores.length) { scoreList.innerHTML = '<li>Aucun score pour le moment</li>'; return; }
-            scoreList.innerHTML = scores.map(s => `<li><span>${s.username}</span><span>${s.total}</span></li>`).join('');
+            scoreList.innerHTML = scores
+                .map(s => `<li><span>${s.username}</span><span>${s.total}</span></li>`)
+                .join('');
         } catch (err) { scoreList.innerHTML = '<li>Erreur de chargement</li>'; }
     }
 </script>
