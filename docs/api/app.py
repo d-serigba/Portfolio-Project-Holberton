@@ -64,9 +64,11 @@ def create_app():
                     with open(tokens_jeux[jeu_id], "w") as f:
                         f.write(token_data)
 
-            # Fonctionne sur WSL (python3) et Windows (py)
             python = shutil.which("python3") or shutil.which("py") or "python"
             dossier = os.path.dirname(chemin)
+            print(f"[DEBUG] Python: {python}")
+            print(f"[DEBUG] Chemin: {chemin}")
+            print(f"[DEBUG] Dossier: {dossier}")
             subprocess.Popen([python, chemin], cwd=dossier)
             return {"status": "lancé"}, 200
         except Exception as e:
