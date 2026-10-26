@@ -1,6 +1,7 @@
 import subprocess
 import os
 import json
+import shutil
 from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -51,8 +52,8 @@ def create_app():
         if not chemin or not os.path.exists(chemin):
             return {"error": f"Jeu non trouvé : {chemin}"}, 404
         try:
-            token  = request.args.get("token")
-            user   = request.args.get("player")
+            token = request.args.get("token")
+            user  = request.args.get("player")
             if token and user:
                 token_data = json.dumps({"token": token, "user": user})
                 tokens_jeux = {
@@ -63,8 +64,10 @@ def create_app():
                     with open(tokens_jeux[jeu_id], "w") as f:
                         f.write(token_data)
 
+            # Fonctionne sur WSL (python3) et Windows (py)
+            python = shutil.which("python3") or shutil.which("py") or "python"
             dossier = os.path.dirname(chemin)
-            subprocess.Popen(["py", chemin], cwd=dossier)
+            subprocess.Popen([python, chemin], cwd=dossier)
             return {"status": "lancé"}, 200
         except Exception as e:
             return {"error": str(e)}, 500
