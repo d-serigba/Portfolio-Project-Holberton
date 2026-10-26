@@ -64,12 +64,13 @@ def create_app():
                     with open(tokens_jeux[jeu_id], "w") as f:
                         f.write(token_data)
 
-            python = shutil.which("python3") or shutil.which("py") or "python"
             dossier = os.path.dirname(chemin)
-            print(f"[DEBUG] Python: {python}")
+            print(f"[DEBUG] Python: py -3.12")
             print(f"[DEBUG] Chemin: {chemin}")
             print(f"[DEBUG] Dossier: {dossier}")
-            subprocess.Popen([python, chemin], cwd=dossier)
+            
+            # Utilisation explicite du lanceur Python 3.12 de Windows
+            subprocess.Popen(["py", "-3.12", chemin], cwd=dossier)
             return {"status": "lancé"}, 200
         except Exception as e:
             return {"error": str(e)}, 500
