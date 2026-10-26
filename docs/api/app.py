@@ -64,7 +64,7 @@ def create_app():
                         f.write(token_data)
 
             dossier = os.path.dirname(chemin)
-            subprocess.Popen(["python3", chemin], cwd=dossier)
+            subprocess.Popen(["py", chemin], cwd=dossier)
             return {"status": "lancé"}, 200
         except Exception as e:
             return {"error": str(e)}, 500
