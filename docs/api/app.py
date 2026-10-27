@@ -1,21 +1,39 @@
 import subprocess
 import os
 import json
-import shutil
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from jinja2 import TemplateNotFound
 from models import db
 from config import Config
 
 jwt = JWTManager()
+
+BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Chemin de chaque jeu et de son fichier de session
+JEUX = {
+    "fighting": {
+        "main"  : os.path.join(BASE, "docs", "fighter_games", "main.py"),
+        "token" : os.path.join(BASE, "docs", "fighter_games", "save", "token.json"),
+    },
+    "metroidvania": {
+        "main"  : os.path.join(BASE, "docs", "metroidvania", "main.py"),
+        "token" : os.path.join(BASE, "docs", "metroidvania", "save", "token.json"),
+    },
+    "arnaud": {
+        "main"  : os.path.join(BASE, "docs", "zelda-like", "arnaud bizarre adventure", "main.py"),
+        "token" : None,  # ce jeu ne lit pas encore le token
+    },
+}
+
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
     CORS(app)
-
     db.init_app(app)
     jwt.init_app(app)
 
@@ -27,7 +45,7 @@ def create_app():
     app.register_blueprint(scores_bp, url_prefix="/api/scores")
     app.register_blueprint(jeux_bp,   url_prefix="/api/jeux")
 
-    # ==================== ROUTES DU FRONT-END ====================
+    # ==================== FRONT-END ====================
 
     @app.route("/")
     def home():
@@ -37,43 +55,30 @@ def create_app():
     def page_jeu(jeu_id):
         try:
             return render_template(f"{jeu_id}.html")
-        except:
+        except TemplateNotFound:
             return "Page de jeu non trouvée", 404
 
     @app.route("/lancer/<jeu_id>")
     def lancer_jeu_local(jeu_id):
-        BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        jeux = {
-            "fighting"    : os.path.join(BASE, "docs", "fighter_games", "main.py"),
-            "metroidvania": os.path.join(BASE, "docs", "metroidvania", "main.py"),
-            "arnaud"      : os.path.join(BASE, "docs", "zelda-like", "arnaud bizarre adventure", "main.py"),
-        }
-        chemin = jeux.get(jeu_id)
-        if not chemin or not os.path.exists(chemin):
-            return {"error": f"Jeu non trouvé : {chemin}"}, 404
-        try:
-            token = request.args.get("token")
-            user  = request.args.get("player")
-            if token and user:
-                token_data = json.dumps({"token": token, "user": user})
-                tokens_jeux = {
-                    "metroidvania": os.path.join(BASE, "docs", "metroidvania", "save", "token.json"),
-                    "fighting"    : os.path.join(BASE, "docs", "fighter_games", "save", "token.json"),
-                }
-                if jeu_id in tokens_jeux:
-                    with open(tokens_jeux[jeu_id], "w") as f:
-                        f.write(token_data)
+        jeu = JEUX.get(jeu_id)
+        if not jeu or not os.path.exists(jeu["main"]):
+            return jsonify({"error": f"Jeu non trouvé : {jeu_id}"}), 404
 
-            dossier = os.path.dirname(chemin)
-            print(f"[DEBUG] Python: py -3.12")
-            print(f"[DEBUG] Chemin: {chemin}")
-            print(f"[DEBUG] Dossier: {dossier}")
-            
-            # Utilisation explicite du lanceur Python 3.12 de Windows
-            subprocess.Popen(["py", "-3.12", chemin], cwd=dossier)
-            return {"status": "lancé"}, 200
+        token  = request.args.get("token")
+        pseudo = request.args.get("player")
+
+        try:
+            # Écrit la session pour que le jeu la récupère au démarrage
+            if token and pseudo and jeu["token"]:
+                os.makedirs(os.path.dirname(jeu["token"]), exist_ok=True)
+                with open(jeu["token"], "w", encoding="utf-8") as f:
+                    json.dump({"token": token, "user": pseudo}, f)
+
+            dossier = os.path.dirname(jeu["main"])
+            subprocess.Popen(["py", "-3.12", jeu["main"]], cwd=dossier)
+            return jsonify({"status": "lancé"}), 200
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
     # ==============================================================
 
@@ -82,6 +87,8 @@ def create_app():
 
     return app
 
+
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True, port=5000)

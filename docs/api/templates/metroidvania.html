@@ -28,6 +28,18 @@
     </div>
     <script>
         const API_ROOT = "http://127.0.0.1:5000";
+
+        // Déconnexion automatique à la fermeture de la fenêtre
+        window.addEventListener('beforeunload', () => {
+            const token = new URLSearchParams(window.location.search).get("token");
+            if (token) {
+                navigator.sendBeacon(
+                    `${API_ROOT}/api/auth/logout`,
+                    new Blob([JSON.stringify({ token })], { type: 'application/json' })
+                );
+            }
+        });
+
         async function lancerJeu(id) {
             const btn = document.getElementById('playBtn');
             const status = document.getElementById('status');
@@ -38,7 +50,7 @@
             const token  = params.get("token") || "";
             const player = params.get("player") || "";
             try {
-                const res = await fetch(`${API_ROOT}/lancer/${id}?token=${token}&player=${player}`);
+                const res = await fetch(`${API_ROOT}/lancer/${id}?token=${encodeURIComponent(token)}&player=${encodeURIComponent(player)}`);
                 const data = await res.json();
                 if (data.status === 'lancé') {
                     btn.textContent = '✓ JEU LANCÉ !';

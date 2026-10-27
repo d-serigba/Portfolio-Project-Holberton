@@ -320,8 +320,50 @@
         return { 'Authorization': 'Bearer ' + getToken() };
     }
 
-    // Si déjà connecté (token en mémoire), on passe directement au menu
-    if (getToken() && getUsername()) showMenu(getUsername());
+    // ── DÉCONNEXION CÔTÉ SERVEUR ──────────────────────────────
+    // Utilisé par QUITTER (fetch). La fermeture de fenêtre passe par pagehide.
+    async function serverLogout() {
+        const token = getToken();
+        if (!token) return;
+        try {
+            await fetch(`${API_BASE}/auth/logout`, {
+                method: 'POST',
+                headers: authHeaders()
+            });
+        } catch (err) { console.error('Logout échoué', err); }
+    }
+
+    // Fermeture réelle de la fenêtre uniquement (pas la navigation vers un jeu)
+    let allerVersJeu = false;
+
+    window.addEventListener('pagehide', () => {
+        if (allerVersJeu) return;
+        if (!getToken()) return;
+        navigator.sendBeacon(
+            `${API_BASE}/auth/logout-beacon`,
+            new Blob([JSON.stringify({ token: getToken() })], { type: 'application/json' })
+        );
+    });
+
+    // ── VÉRIFICATION DE SESSION AU DÉMARRAGE ──────────────────
+    // Si un token traîne dans localStorage, on vérifie qu'il est
+    // encore la session active côté serveur avant d'afficher le menu.
+    async function verifierSession() {
+        const token = getToken();
+        const username = getUsername();
+        if (!token || !username) return;
+        try {
+            const res = await fetch(`${API_BASE}/auth/verify`, { headers: authHeaders() });
+            if (res.ok) {
+                showMenu(username);
+            } else {
+                clearSession();
+            }
+        } catch (err) {
+            clearSession();
+        }
+    }
+    verifierSession();
 
     // ── AUTHENTIFICATION ───────────────────────────────────────
     async function apiLogin(username, password) {
@@ -378,8 +420,9 @@
         if (e.key === 'Enter') loginBtn.click();
     });
 
-    // Clic sur QUITTER — déconnexion
-    logoutBtn.addEventListener('click', () => {
+    // Clic sur QUITTER — déconnexion manuelle
+    logoutBtn.addEventListener('click', async () => {
+        await serverLogout();
         clearSession();
         menuScreen.classList.add('hidden');
         nameScreen.classList.remove('hidden');
@@ -474,6 +517,7 @@
 
     // Redirige vers la page du jeu avec token et pseudo en paramètres
     function openGame(jeuId) {
+        allerVersJeu = true;
         window.location.href = `${API_ROOT}/${jeuId}.html?player=${encodeURIComponent(getUsername())}&token=${encodeURIComponent(getToken())}`;
     }
 

@@ -10,7 +10,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 from pygame import mixer
 from fighter import Fighter
 from api_client import ApiClient
-from login_screen import run_login  # <--- IMPORT DE L'ÉCRAN DE CONNEXION UNIFIÉ
+from login_screen import run_login
 
 mixer.init()
 pygame.init()
@@ -37,9 +37,14 @@ def get_asset_path(relative_path):
 # ── INITIALISATION DE L'API & CONNEXION / SSO ──────────────
 api = ApiClient(nom_jeu="brawler")
 
-# On lance la procédure de connexion (SSO automatique si token.json existe, sinon écran de saisie)
-token_joueur, pseudo_joueur = run_login(screen)
+# Si pas de session valide, on affiche l'écran de login
+if not api.connecte():
+    resultat = run_login(screen)
+    if not resultat or not resultat[0]:
+        pygame.quit()
+        sys.exit()
 
+pseudo_joueur = api.user
 print(f"[Brawler] Connecté avec succès en tant que : {pseudo_joueur}")
 debut_temps = time.time()
 
@@ -112,10 +117,12 @@ def ecran_mode():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                api.deconnecter()
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    api.deconnecter()
                     pygame.quit()
                     sys.exit()
                 if event.key == pygame.K_1:
@@ -192,16 +199,16 @@ while run:
 
     pygame.display.update()
 
-# ── ENVOI SCORE API ────────────────────────────────────────
+# ── ENVOI SCORE API & DÉCONNEXION ──────────────────────────
 try:
     temps_jeu = int(time.time() - debut_temps)
-    # Calcule un score basé sur tes rounds gagnés
     score_final = score[0] * 100
     completion = 100 if score[0] > score[1] else 50
     api.envoyer_score(score_final, completion, temps_jeu)
-    print(f"[Brawler API] Score envoyé avec succès : {score_final} pts")
+    print(f"[Brawler API] Score envoyé : {score_final} pts")
 except Exception as e:
     print(f"[Brawler API] Impossible d'envoyer le score : {e}")
 
+api.deconnecter()
 pygame.quit()
 sys.exit()

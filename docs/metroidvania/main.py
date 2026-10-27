@@ -4,34 +4,25 @@
 
 import pygame
 import sys
-import os
-import json
 from settings import *
-from facade   import Facade
+from facade import Facade
+from login_screen import run_login
+
 
 def main():
     pygame.init()
-    ecran    = pygame.display.set_mode((LARGEUR, HAUTEUR))
+    ecran     = pygame.display.set_mode((LARGEUR, HAUTEUR))
     pygame.display.set_caption(TITRE)
-    horloge  = pygame.time.Clock()
-    police   = pygame.font.SysFont("monospace", 15, bold=True)
+    horloge   = pygame.time.Clock()
+    police    = pygame.font.SysFont("monospace", 15, bold=True)
     police_gd = pygame.font.SysFont("monospace", 38, bold=True)
     police_m  = pygame.font.SysFont("monospace", 20)
 
-    # ── RÉCUPÉRATION AUTOMATIQUE DE LA SESSION DU HUB ───────────
-    pseudo_joueur = "Guest"
-    token_joueur = None
-    token_path = os.path.join(os.path.dirname(__file__), "save", "token.json")
-    
-    if os.path.exists(token_path):
-        try:
-            with open(token_path) as f:
-                data = json.load(f)
-                pseudo_joueur = data.get("user", "Guest")
-                token_joueur = data.get("token")
-                print(f"[Metroidvania] Session Hub chargée : {pseudo_joueur}")
-        except:
-            pass
+    # ── CONNEXION (SSO automatique si token présent, sinon écran de saisie) ──
+    token_joueur, pseudo_joueur = run_login(ecran)
+    if not pseudo_joueur:
+        pseudo_joueur = "Guest"
+    print(f"[Metroidvania] Connecté en tant que : {pseudo_joueur}")
 
     # ── LOGIQUE DU JEU ──────────────────────────────────────────
     jeu = Facade()
@@ -85,7 +76,7 @@ def main():
         ecran.blit(draw_player_info, (15, 15))
 
         ctrl = police.render("Z:saut  SHIFT:esquive  S:accroupir  X:épée  C:blast  ECHAP:quitter", True, (80, 80, 100))
-        ecran.blit(ctrl, (LARGEUR//2 - ctrl.get_width()//2, HAUTEUR - 22))
+        ecran.blit(ctrl, (LARGEUR // 2 - ctrl.get_width() // 2, HAUTEUR - 22))
 
         if jeu.game_over:
             voile = pygame.Surface((LARGEUR, HAUTEUR), pygame.SRCALPHA)
@@ -94,9 +85,9 @@ def main():
             t1 = police_gd.render("GAME OVER", True, ROUGE)
             t2 = police_m.render(f"{pseudo_joueur} n'a plus de vies...", True, BLANC)
             t3 = police_m.render("R pour recommencer", True, (180, 180, 180))
-            ecran.blit(t1, (LARGEUR//2 - t1.get_width()//2, HAUTEUR//2 - 60))
-            ecran.blit(t2, (LARGEUR//2 - t2.get_width()//2, HAUTEUR//2))
-            ecran.blit(t3, (LARGEUR//2 - t3.get_width()//2, HAUTEUR//2 + 40))
+            ecran.blit(t1, (LARGEUR // 2 - t1.get_width() // 2, HAUTEUR // 2 - 60))
+            ecran.blit(t2, (LARGEUR // 2 - t2.get_width() // 2, HAUTEUR // 2))
+            ecran.blit(t3, (LARGEUR // 2 - t3.get_width() // 2, HAUTEUR // 2 + 40))
 
         pygame.display.flip()
         horloge.tick(FPS)
@@ -104,6 +95,7 @@ def main():
     jeu.calculer_et_envoyer_score()
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()

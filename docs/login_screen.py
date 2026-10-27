@@ -1,7 +1,5 @@
 import pygame
 import requests
-import json
-import os
 
 # Couleurs
 WHITE = (255, 255, 255)
@@ -10,113 +8,137 @@ GRAY = (200, 200, 200)
 LIGHT_BLUE = (173, 216, 230)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (70, 120, 220)
 
-# Chemin unique et partagé pour le Token SSO (à la racine du dossier docs)
-TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "token.json")
+BASE_URL = "http://127.0.0.1:5000/api/auth"
 
-def run_login(screen, url_api="http://127.0.0.1:5000/api/auth/login"):
+
+def draw_text(text, font, color, surface, x, y):
+    surface.blit(font.render(text, True, color), (x, y))
+
+
+def appeler_api(route, username, password):
+    """Appelle /login ou /register. Retourne (token, username, erreur)."""
+    try:
+        r = requests.post(
+            f"{BASE_URL}/{route}",
+            json={"username": username, "password": password},
+            timeout=5,
+        )
+    except requests.exceptions.RequestException:
+        return None, None, "Serveur injoignable (Flask lancé ?)"
+
+    if r.status_code in (200, 201):
+        data = r.json()
+        user_info = data.get("user", {})
+        return data.get("token"), user_info.get("username", username), ""
+
+    try:
+        erreur = r.json().get("error", "Erreur inconnue.")
+    except ValueError:
+        erreur = f"Erreur serveur ({r.status_code})."
+    return None, None, erreur
+
+
+def run_login(screen, url_api=None):
+    """
+    Affiche l'écran de connexion / inscription.
+    Retourne (token, username) ou (None, None) si l'utilisateur ferme la fenêtre.
+    Le fichier token.json est géré par le Hub, pas ici.
+    """
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.time.Clock()
 
-    # Boîtes de saisie (x, y, largeur, hauteur)
     user_box = pygame.Rect(350, 200, 300, 40)
     pass_box = pygame.Rect(350, 280, 300, 40)
-    button_box = pygame.Rect(425, 360, 150, 40)
+    login_btn = pygame.Rect(230, 360, 200, 40)
+    register_btn = pygame.Rect(470, 360, 200, 40)
 
     user_text = ""
     pass_text = ""
-    active_box = "user" # Qui a le focus au début
-    error_message = ""
-    success_message = ""
-    token = None
+    active_box = "user"
+    message = ""
+    message_color = RED
+    en_attente = False
 
-    running = True
-    while running:
-        screen.fill((30, 30, 40)) # Fond sombre
+    while True:
+        screen.fill((30, 30, 40))
 
-        # Événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
+                return None, None
+
+            if event.type == pygame.MOUSEBUTTONDOWN and not en_attente:
                 if user_box.collidepoint(event.pos):
                     active_box = "user"
                 elif pass_box.collidepoint(event.pos):
                     active_box = "pass"
-                elif button_box.collidepoint(event.pos):
-                    active_box = "submit"
-                    
-                    # Tentative de connexion
-                    try:
-                        response = requests.post(
-                            url_api, 
-                            json={"username": user_text, "password": pass_text}, 
-                            timeout=5
-                        )
-                        if response.status_code == 200:
-                            data = response.json()
-                            token = data.get("token") # Correction de la clé (anciennement access_token)
-                            user_info = data.get("user", {})
-                            username = user_info.get("username", user_text)
-                            
-                            # Sauvegarde du token pour le SSO (partagé avec le Metroidvania)
-                            try:
-                                os.makedirs(os.path.dirname(TOKEN_FILE), exist_ok=True)
-                                with open(TOKEN_FILE, "w") as f:
-                                    json.dump({"token": token, "user": username}, f)
-                                print(f"[SSO] Session sauvegardée pour {username} dans {TOKEN_FILE}")
-                            except Exception as e:
-                                print(f"[SSO] Erreur d'écriture du jeton : {e}")
+                elif login_btn.collidepoint(event.pos):
+                    route = "login"
+                elif register_btn.collidepoint(event.pos):
+                    route = "register"
+                else:
+                    route = None
 
-                            error_message = ""
-                            success_message = "Connexion réussie !"
-                            running = False # On ferme le login pour lancer le jeu
-                        else:
-                            error_message = "Identifiants incorrects."
-                    except requests.exceptions.ConnectionError:
-                        error_message = "Impossible de contacter l'API (Flask lancé ?)"
+                if route:
+                    en_attente = True
+                    message, message_color = "Connexion en cours...", GRAY
+                    # Rendu immédiat du message avant l'appel réseau
+                    screen.fill((30, 30, 40))
+                    pygame.display.flip()
 
-            if event.type == pygame.KEYDOWN:
-                if active_box == "user":
-                    if event.key == pygame.K_BACKSPACE:
+                    token, pseudo, erreur = appeler_api(route, user_text, pass_text)
+                    en_attente = False
+                    if token:
+                        return token, pseudo
+                    message, message_color = erreur, RED
+
+            if event.type == pygame.KEYDOWN and not en_attente:
+                if event.key == pygame.K_TAB:
+                    active_box = "pass" if active_box == "user" else "user"
+                elif event.key == pygame.K_RETURN:
+                    # Entrée = connexion
+                    en_attente = True
+                    message, message_color = "Connexion en cours...", GRAY
+                    screen.fill((30, 30, 40))
+                    pygame.display.flip()
+
+                    token, pseudo, erreur = appeler_api("login", user_text, pass_text)
+                    en_attente = False
+                    if token:
+                        return token, pseudo
+                    message, message_color = erreur, RED
+                elif event.key == pygame.K_BACKSPACE:
+                    if active_box == "user":
                         user_text = user_text[:-1]
-                    elif event.key != pygame.K_RETURN and event.key != pygame.K_TAB:
-                        user_text += event.unicode
-                elif active_box == "pass":
-                    if event.key == pygame.K_BACKSPACE:
+                    else:
                         pass_text = pass_text[:-1]
-                    elif event.key != pygame.K_RETURN and event.key != pygame.K_TAB:
+                elif event.unicode:
+                    if active_box == "user":
+                        user_text += event.unicode
+                    else:
                         pass_text += event.unicode
 
-        # Dessin des box (Changement de couleur si actif)
+        # Cadres des champs
         pygame.draw.rect(screen, LIGHT_BLUE if active_box == "user" else GRAY, user_box, 2)
         pygame.draw.rect(screen, LIGHT_BLUE if active_box == "pass" else GRAY, pass_box, 2)
-        pygame.draw.rect(screen, GREEN, button_box)
 
-        # Rendu des textes
+        # Boutons
+        pygame.draw.rect(screen, GREEN, login_btn)
+        pygame.draw.rect(screen, BLUE, register_btn)
+
+        # Textes
         draw_text("CONNEXION", font, WHITE, screen, 430, 130)
         draw_text("Username:", font, WHITE, screen, 230, 205)
         draw_text("Password:", font, WHITE, screen, 230, 285)
-        
-        # Affichage du texte tapé (on masque le mot de passe)
         draw_text(user_text, font, WHITE, screen, user_box.x + 5, user_box.y + 5)
         draw_text("*" * len(pass_text), font, WHITE, screen, pass_box.x + 5, pass_box.y + 5)
-        draw_text("Valider", font, BLACK, screen, button_box.x + 40, button_box.y + 5)
+        draw_text("SE CONNECTER", font, BLACK, screen, login_btn.x + 15, login_btn.y + 5)
+        draw_text("CRÉER UN COMPTE", font, WHITE, screen, register_btn.x + 10, register_btn.y + 5)
 
-        # Messages d'erreur ou succès
-        if error_message:
-            draw_text(error_message, font, RED, screen, 350, 430)
-        if success_message:
-            draw_text(success_message, font, GREEN, screen, 350, 430)
+        if message:
+            draw_text(message, font, message_color, screen, 230, 430)
 
         pygame.display.flip()
         clock.tick(30)
-
-    return token, user_text
-
-def draw_text(text, font, color, surface, x, y):
-    text_surface = font.render(text, True, color)
-    surface.blit(text_surface, (x, y))

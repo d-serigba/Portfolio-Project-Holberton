@@ -1,44 +1,24 @@
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import hashlib
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     __tablename__ = "users"
-    id         = db.Column(db.Integer, primary_key=True)
-    username   = db.Column(db.String(50), unique=True, nullable=False)
-    password   = db.Column(db.String(256), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    scores     = db.relationship("Score", backref="user", lazy=True)
 
-    def set_password(self, mdp):
-        self.password = hashlib.sha256(mdp.encode()).hexdigest()
+    id               = db.Column(db.Integer, primary_key=True)
+    username         = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash    = db.Column(db.String(255), nullable=False)
+    current_session  = db.Column(db.String(64), nullable=True)   # ID de la session active (session unique)
+    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def check_password(self, mdp):
-        return self.password == hashlib.sha256(mdp.encode()).hexdigest()
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
         return {"id": self.id, "username": self.username}
-
-
-class Score(db.Model):
-    __tablename__ = "scores"
-    id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    jeu        = db.Column(db.String(50), nullable=False)
-    score      = db.Column(db.Integer, default=0)
-    completion = db.Column(db.Integer, default=0)
-    temps_jeu  = db.Column(db.Integer, default=0)
-    date       = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            "id"        : self.id,
-            "user_id"   : self.user_id,
-            "jeu"       : self.jeu,
-            "score"     : self.score,
-            "completion": self.completion,
-            "temps_jeu" : self.temps_jeu,
-            "date"      : self.date.isoformat()
-        }
