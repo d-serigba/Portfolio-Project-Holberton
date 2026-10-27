@@ -13,7 +13,8 @@ TOKEN_FILE = os.path.join(
 
 class ApiClient:
 
-    def __init__(self):
+    def __init__(self, nom_jeu="metroidvania"):
+        self.nom_jeu = nom_jeu
         self.token = None
         self.user = None
         self._charger_token()
@@ -28,9 +29,9 @@ class ApiClient:
                     data = json.load(f)
                 self.token = data.get("token")
                 self.user = data.get("user")
-                print(f"[API Metroidvania] Session chargée pour : {self.user}")
+                print(f"[API {self.nom_jeu}] Session chargée pour : {self.user}")
             except (OSError, json.JSONDecodeError) as e:
-                print(f"[API Metroidvania] Échec lecture session : {e}")
+                print(f"[API {self.nom_jeu}] Échec lecture session : {e}")
 
     def _sauvegarder_token(self):
         try:
@@ -38,7 +39,7 @@ class ApiClient:
             with open(TOKEN_FILE, "w") as f:
                 json.dump({"token": self.token, "user": self.user}, f)
         except OSError as e:
-            print(f"[API Metroidvania] Échec sauvegarde session : {e}")
+            print(f"[API {self.nom_jeu}] Échec sauvegarde session : {e}")
 
     def _supprimer_token_local(self):
         self.token = None
@@ -83,7 +84,7 @@ class ApiClient:
             r = requests.post(
                 f"{API_URL}/api/scores/submit",
                 json={
-                    "jeu": "metroidvania",
+                    "jeu": self.nom_jeu,
                     "score": min(score, 9999),
                     "completion": completion,
                     "temps_jeu": temps_jeu
@@ -102,7 +103,7 @@ class ApiClient:
 
     def classement(self):
         try:
-            r = requests.get(f"{API_URL}/api/scores/classement/metroidvania", timeout=3)
+            r = requests.get(f"{API_URL}/api/scores/classement/{self.nom_jeu}", timeout=3)
             return r.json() if r.status_code == 200 else []
         except requests.RequestException:
             return []
