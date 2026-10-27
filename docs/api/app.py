@@ -23,7 +23,7 @@ JEUX = {
         "token" : os.path.join(BASE, "docs", "metroidvania", "save", "token.json"),
     },
     "arnaud": {
-        "main"  : os.path.join(BASE, "docs", "zelda-like", "arnaud bizarre adventure", "main.py"),
+        "main"  : os.path.join(BASE, "docs", "zelda-like", "arnaud_bizarre_adventure", "main.py"),
         "token" : None,  # ce jeu ne lit pas encore le token
     },
 }
