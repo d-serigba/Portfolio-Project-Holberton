@@ -8,6 +8,7 @@ Holberton Games is a web application designed to compile a collection of retro g
 
   - **David Dufont**: Backend Developer
   - **Dylan Serigba**: Frontend Developer
+  - **Yonnhi Marcellus**: Security Devloper
 
 ## Games Included
 
