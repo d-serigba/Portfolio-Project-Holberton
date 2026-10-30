@@ -1,35 +1,127 @@
+Voici `arnaud.html` réorganisé de la même façon. Seuls le titre et l'identifiant du jeu (`'arnaud'`) changent, la logique reste identique.
+
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Arnaud's Bizarre Adventure</title>
+
+    <!-- Police pixel art rétro -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: #00ff88; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .box { background: #1a1a2e; border: 4px solid #4a4a6a; border-radius: 20px; padding: 40px; display: inline-block; max-width: 600px; text-align: center; }
-        h2 { margin-bottom: 20px; }
-        p { font-size: 0.7rem; color: #ccc; margin: 20px 0; line-height: 1.6; }
-        .retro-btn { background: #0f0f1a; border: 2px solid #00ff88; color: #00ff88; padding: 14px 28px; font-family: 'Press Start 2P', cursive; font-size: 0.75rem; cursor: pointer; margin-top: 10px; }
-        .retro-btn:hover { background: #00ff88; color: #0f0f1a; }
-        .retro-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        a { color: #5a5a7a; text-decoration: none; font-size: 0.6rem; display: block; margin-top: 30px; }
-        a:hover { color: #00ff88; }
-        .status { font-size: 0.6rem; margin-top: 15px; min-height: 16px; color: #ffb84d; }
+        /* ── RESET ────────────────────────────────────────────── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ── PAGE ─────────────────────────────────────────────── */
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            justify-content: center;   /* centre horizontalement */
+            align-items: center;       /* centre verticalement */
+            min-height: 100vh;         /* prend toute la hauteur de l'écran */
+        }
+
+        /* ── BOÎTE CENTRALE ───────────────────────────────────── */
+        .box {
+            background: #1a1a2e;
+            border: 4px solid #4a4a6a;
+            border-radius: 20px;
+            padding: 40px;
+            display: inline-block;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        /* ── TITRES ET TEXTES ─────────────────────────────────── */
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 0.7rem;
+            color: #ccc;
+            margin: 20px 0;
+            line-height: 1.6;          /* espace entre les lignes */
+        }
+
+        /* ── BOUTON ───────────────────────────────────────────── */
+        .retro-btn {
+            background: #0f0f1a;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 14px 28px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .retro-btn:hover {
+            background: #00ff88;       /* inverse les couleurs au survol */
+            color: #0f0f1a;
+        }
+
+        .retro-btn:disabled {
+            opacity: 0.5;              /* grisé quand désactivé */
+            cursor: not-allowed;
+        }
+
+        /* ── LIENS ────────────────────────────────────────────── */
+        a {
+            color: #5a5a7a;
+            text-decoration: none;
+            font-size: 0.6rem;
+            display: block;
+            margin-top: 30px;
+        }
+
+        a:hover {
+            color: #00ff88;
+        }
+
+        /* ── MESSAGE D'ÉTAT ───────────────────────────────────── */
+        .status {
+            font-size: 0.6rem;
+            margin-top: 15px;
+            min-height: 16px;          /* garde la place même vide */
+            color: #ffb84d;
+        }
     </style>
 </head>
 <body>
+
+    <!-- ── CONTENU VISIBLE ─────────────────────────────────── -->
     <div class="box">
         <h2>ARNAUD'S BIZARRE ADVENTURE</h2>
+
         <p>Clique sur le bouton pour lancer le jeu sur cette machine.</p>
-        <button class="retro-btn" id="playBtn" onclick="lancerJeu('arnaud')">▶ JOUER</button>
+
+        <button class="retro-btn" id="playBtn" onclick="lancerJeu('arnaud')">
+            ▶ JOUER
+        </button>
+
+        <!-- Affiche les messages (succès ou erreur) -->
         <div class="status" id="status"></div>
+
         <a href="/">⇦ RETOUR AU MENU</a>
     </div>
+
+    <!-- ── LOGIQUE JAVASCRIPT ──────────────────────────────── -->
     <script>
+        // Adresse du serveur Flask
         const API_ROOT = "http://127.0.0.1:5000";
 
-        // Déconnexion automatique à la fermeture de la fenêtre
+        // ── Déconnexion automatique à la fermeture de la fenêtre ──
+        // beforeunload se déclenche juste avant de quitter la page.
+        // sendBeacon envoie une requête même si la page se ferme.
         window.addEventListener('beforeunload', () => {
             const token = new URLSearchParams(window.location.search).get("token");
             if (token) {
@@ -40,29 +132,41 @@
             }
         });
 
+        // ── Lancement du jeu ─────────────────────────────────────
+        // Appelée au clic sur le bouton JOUER, avec l'identifiant du jeu.
         async function lancerJeu(id) {
-            const btn = document.getElementById('playBtn');
+            const btn    = document.getElementById('playBtn');
             const status = document.getElementById('status');
+
+            // Désactive le bouton pendant le chargement
             btn.disabled = true;
             btn.textContent = '⏳ LANCEMENT...';
             status.textContent = '';
+
+            // Récupère le token et le pseudo passés dans l'URL
             const params = new URLSearchParams(window.location.search);
             const token  = params.get("token") || "";
             const player = params.get("player") || "";
+
             try {
-                const res = await fetch(`${API_ROOT}/lancer/${id}?token=${encodeURIComponent(token)}&player=${encodeURIComponent(player)}`);
+                // Demande au serveur de lancer le jeu
+                const res  = await fetch(`${API_ROOT}/lancer/${id}?token=${encodeURIComponent(token)}&player=${encodeURIComponent(player)}`);
                 const data = await res.json();
+
                 if (data.status === 'lancé') {
+                    // Succès : on confirme à l'utilisateur
                     btn.textContent = '✓ JEU LANCÉ !';
                     status.textContent = 'Le jeu devrait apparaître dans quelques secondes.';
                     status.style.color = '#00ff88';
                 } else {
+                    // Erreur renvoyée par le serveur : on réactive le bouton
                     btn.textContent = '▶ JOUER';
                     btn.disabled = false;
                     status.textContent = 'Erreur : ' + data.error;
                     status.style.color = '#ff4d4d';
                 }
             } catch (e) {
+                // Pas de réponse du serveur (serveur éteint, réseau coupé…)
                 btn.textContent = '▶ JOUER';
                 btn.disabled = false;
                 status.textContent = 'Impossible de contacter le serveur.';
@@ -70,5 +174,7 @@
             }
         }
     </script>
+
 </body>
 </html>
+```
