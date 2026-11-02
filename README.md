@@ -1,8 +1,8 @@
-# Holberton Games - Portfolio Project C28
+# Holberton Games - Portfolio Project C29
 
 ## Project Objective
 
-Holberton Games is a web application designed to compile a collection of retro games. Developed as part of the C28 cohort portfolio project, the primary objective is to build a complete, functional web platform that integrates gameplay directly into the browser.
+Holberton Games is a web application designed to compile a collection of retro games. Developed as part of the C29 cohort portfolio project, the primary objective is to build a complete, functional web platform that integrates gameplay directly into the browser.
 
 ## Team
 
@@ -155,4 +155,4 @@ Portfolio-Project-Holberton/
 
 ---
 
-*Project developed by the C28 cohort.*
+*Project developed by the C29   cohort.*
