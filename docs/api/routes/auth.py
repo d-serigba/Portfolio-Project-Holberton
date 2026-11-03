@@ -64,7 +64,7 @@ def login():
 @auth_bp.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    user = User.query.get(int(get_jwt_identity()))
+    user = db.session.get(User, int(get_jwt_identity()))
     if user:
         user.current_session = None
         db.session.commit()
@@ -80,12 +80,12 @@ def logout_beacon():
         return jsonify({"error": "token requis"}), 400
     try:
         decoded = decode_token(token)
-        user = User.query.get(int(decoded["sub"]))
+        user = db.session.get(User, int(decoded["sub"]))
         if user and user.current_session == decoded.get("sid"):
             user.current_session = None
             db.session.commit()
-    except Exception:
-        pass  # token expiré ou invalide : rien à libérer
+    except Exception as e:
+        print(f"[logout-beacon] token ignoré : {e}")
     return jsonify({"message": "ok"}), 200
 
 
@@ -93,7 +93,7 @@ def logout_beacon():
 @jwt_required()
 def verify():
     """Vérifie qu'un token est encore la session active de l'utilisateur."""
-    user = User.query.get(int(get_jwt_identity()))
+    user = db.session.get(User, int(get_jwt_identity()))
     sid = get_jwt().get("sid")
     if not user or user.current_session != sid:
         return jsonify({"error": "Session expirée ou ouverte ailleurs"}), 401
