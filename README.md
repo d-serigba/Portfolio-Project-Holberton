@@ -152,6 +152,14 @@ Portfolio-Project-Holberton/
     ├── main.py             # Pygame hub
     └── login_screen.py     # Pygame login screen
 ```
+## Data diagram 
+
+<img width="2352" height="1401" alt="data_diagram 3" src="https://github.com/user-attachments/assets/eb42497c-6dda-4ed2-86ca-aee44b4a49d4" />
+
+## Global architecture
+
+<img width="377" height="436" alt="Global architecture" src="https://github.com/user-attachments/assets/a1a91add-2a56-4c96-8005-e508a94525cb" />
+
 ## Challenges
 
 (Coming soon)
