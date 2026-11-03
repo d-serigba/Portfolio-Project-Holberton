@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import hashlib
+import hmac
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -16,10 +18,19 @@ class User(db.Model):
     scores          = db.relationship("Score", backref="user", lazy=True)
 
     def set_password(self, mdp):
-        self.password = hashlib.sha256(mdp.encode()).hexdigest()
+        # scrypt avec sel aléatoire (format "scrypt:N:r:p$sel$hash")
+        self.password = generate_password_hash(mdp)
 
     def check_password(self, mdp):
-        return self.password == hashlib.sha256(mdp.encode()).hexdigest()
+        # Anciens comptes : SHA-256 sans sel (64 caractères hexa, sans "$")
+        if "$" not in self.password:
+            ancien = hashlib.sha256(mdp.encode()).hexdigest()
+            if not hmac.compare_digest(self.password, ancien):
+                return False
+            # Bon mot de passe : on migre vers scrypt (commit fait par la route /login)
+            self.set_password(mdp)
+            return True
+        return check_password_hash(self.password, mdp)
 
     def to_dict(self):
         return {

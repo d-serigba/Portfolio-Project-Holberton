@@ -20,6 +20,8 @@ def register():
 
     if not username or not password:
         return jsonify({"error": "username et password requis"}), 400
+    if len(password) < 8:
+        return jsonify({"error": "Le mot de passe doit faire au moins 8 caractères"}), 400
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "username déjà pris"}), 409
 
