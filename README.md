@@ -152,7 +152,13 @@ Portfolio-Project-Holberton/
     ├── main.py             # Pygame hub
     └── login_screen.py     # Pygame login screen
 ```
+## Challenges
 
+(Comming soon)
+
+## Future updates
+
+(Comming soon)
 ---
 
 *Project developed by the C29   cohort.*
