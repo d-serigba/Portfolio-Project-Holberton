@@ -170,3 +170,10 @@ Portfolio-Project-Holberton/
 ---
 
 *Project developed by the C29   cohort.*
+
+By 
+David Dufont, github : dufontdd
+
+Dylan Serigba, github : d-serigba
+
+Yonnhi Marcellus, github : youri47
