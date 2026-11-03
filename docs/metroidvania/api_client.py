@@ -4,7 +4,7 @@ import os
 
 API_URL = "http://127.0.0.1:5000"
 
-# Un seul fichier de session partagé : docs/token.json
+# Un seul fichier de session partagé : token.json à la racine du projet
 TOKEN_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "token.json"
@@ -80,31 +80,44 @@ class ApiClient:
         if not self.connecte():
             print("[API] Pas connecté, score non envoyé")
             return False
+
+        payload = {
+            "jeu": self.nom_jeu,
+            "score": min(int(score), 9999),
+            "completion": int(completion),
+            "temps": int(temps_jeu),
+            "temps_jeu": int(temps_jeu),  # doublon au cas où Flask attend ce nom
+        }
+
         try:
             r = requests.post(
                 f"{API_URL}/api/scores/submit",
-                json={
-                    "jeu": self.nom_jeu,
-                    "score": min(score, 9999),
-                    "completion": completion,
-                    "temps_jeu": temps_jeu
-                },
+                json=payload,
                 headers=self._headers(),
                 timeout=3
             )
-            if r.status_code == 201:
-                print(f"[API] Score envoyé : {score} pts")
+            if r.status_code in (200, 201):
+                print(f"[API] Score envoyé : {payload['score']} pts")
                 return True
+
             print(f"[API] Échec envoi score, statut : {r.status_code}")
+            print(f"[API] Détail : {r.text}")
             return False
+
         except requests.RequestException as e:
             print(f"[API] Erreur lors de l'envoi du score : {e}")
             return False
 
     def classement(self):
         try:
-            r = requests.get(f"{API_URL}/api/scores/classement/{self.nom_jeu}", timeout=3)
-            return r.json() if r.status_code == 200 else []
+            r = requests.get(f"{API_URL}/api/scores/classement", timeout=3)
+            if r.status_code != 200:
+                return []
+            donnees = r.json()
+            # Filtre sur le jeu courant si l'API renvoie tous les jeux
+            if isinstance(donnees, list):
+                return [s for s in donnees if s.get("jeu") == self.nom_jeu]
+            return donnees
         except requests.RequestException:
             return []
 
