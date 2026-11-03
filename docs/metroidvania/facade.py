@@ -285,27 +285,33 @@ class Facade:
         self._coyote_frames = 0
         print(f"[JEU] Recommencé — zone: {self.zones.nom_actuel}")
 
-    # ==========================================================
+       # ==========================================================
     #  ENVOI DU SCORE SECURISE
     # ==========================================================
     def calculer_et_envoyer_score(self):
         """Calcule le score final et l'envoie à l'API."""
 
-        # On ne synchronise que si on a de vraies valeurs, pour ne pas
-        # écraser le token que l'ApiClient a déjà chargé depuis docs/token.json
-        if self.token_joueur:
-            self.api.token = self.token_joueur
-        if self.pseudo_joueur:
-            self.api.user = self.pseudo_joueur
+        print("[SCORE] Début calcul/envoi")
+        print(f"[SCORE] api.connecte()={self.api.connecte()} "
+              f"user={self.api.user} token_présent={bool(self.api.token)}")
+
+        # Ne plus écraser le token : ApiClient gère sa propre session
+        # (chargée depuis docs/token.json ou posée par login()).
 
         zones_visitees = len(self.state.etat.get("zones_visitees", []))
         legos          = self.arnaud.legos_collectes
         ennemis        = self.ennemis_tues
 
-        score = (zones_visitees * 100) + (ennemis * 50) + (legos * 200)
-        score = min(score, 9999)
+        score      = min((zones_visitees * 100) + (ennemis * 50) + (legos * 200), 9999)
         completion = int((zones_visitees / 18) * 100)
         temps_jeu  = int(time.time() - self.debut_temps)
 
-        self.api.envoyer_score(score, completion, temps_jeu)
+        print(f"[SCORE] score={score} completion={completion}% temps={temps_jeu}s")
+
+        try:
+            ok = self.api.envoyer_score(score, completion, temps_jeu)
+            print(f"[SCORE] Résultat envoi : {ok}")
+        except Exception as e:
+            print(f"[SCORE] EXCEPTION pendant l'envoi : {type(e).__name__}: {e}")
+
         return score
