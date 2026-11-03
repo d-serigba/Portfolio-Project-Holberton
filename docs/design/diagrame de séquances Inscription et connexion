@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor U as Utilisateur
+    participant C as Client (jeu/web)
+    participant A as API Flask
+    participant DB as Base de données
+
+    U->>C: Saisit username + mot de passe
+    C->>A: POST /auth/register
+    A->>DB: Vérifie que le username n'existe pas
+    alt Username libre
+        A->>A: Hash du mot de passe
+        A->>DB: INSERT User
+        DB-->>A: OK
+        A-->>C: 201 Compte créé
+    else Username déjà pris
+        A-->>C: 409 Erreur
+    end
+
+    U->>C: Se connecte
+    C->>A: POST /auth/login
+    A->>DB: Recherche User
+    A->>A: check_password
+    alt Identifiants valides
+        A->>DB: Crée session unique (UUID)
+        A->>A: Génère JWT (identité + session)
+        A-->>C: 200 access_token
+    else Identifiants invalides
+        A-->>C: 401 Erreur
+    end
