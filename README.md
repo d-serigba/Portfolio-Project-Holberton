@@ -154,11 +154,11 @@ Portfolio-Project-Holberton/
 ```
 ## Challenges
 
-(Comming soon)
+(Coming soon)
 
 ## Future updates
 
-(Comming soon)
+(Coming soon)
 ---
 
 *Project developed by the C29   cohort.*
