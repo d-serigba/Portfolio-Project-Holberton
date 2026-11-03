@@ -52,7 +52,7 @@ Before starting, make sure you have:
 Check your installation in a terminal:
 
 ```bash
-py -3.12 --version
+python3 --version
 ```
 It must display `Python 3.12.x`.
 
