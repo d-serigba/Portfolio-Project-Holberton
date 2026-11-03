@@ -1,6 +1,7 @@
 import subprocess
 import os
 import json
+from datetime import timedelta
 from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -32,6 +33,13 @@ JEUX = {
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Clé JWT FIXE : un token reste valide après un redémarrage de l'API
+    app.config["JWT_SECRET_KEY"] = os.environ.get(
+        "JWT_SECRET_KEY", "portfolio-dev-secret-key-change-me-2026"
+    )
+    # Durée de vie longue pour un usage local de portfolio
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=8)
 
     CORS(app)
     db.init_app(app)
