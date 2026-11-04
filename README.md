@@ -156,9 +156,25 @@ Portfolio-Project-Holberton/
 
 <img width="2352" height="1401" alt="data_diagram 3" src="https://github.com/user-attachments/assets/eb42497c-6dda-4ed2-86ca-aee44b4a49d4" />
 
-## Global architecture
+## Global architecture of the project
+
+<img width="1187" height="768" alt="Global architecture2" src="https://github.com/user-attachments/assets/117b35cf-ff90-42c2-87f5-f7603e0fbe64" />
+
+## Global architecture draft version
 
 <img width="377" height="436" alt="Global architecture" src="https://github.com/user-attachments/assets/a1a91add-2a56-4c96-8005-e508a94525cb" />
+
+## User parkour
+
+<img width="1126" height="1318" alt="diagramme parcours utilisateur" src="https://github.com/user-attachments/assets/146b9d93-cf65-43b2-8d88-5eb1acdb9479" />
+
+## Back-end and front-end connection
+
+<img width="667" height="1399" alt="diagramme connex front back" src="https://github.com/user-attachments/assets/5e634394-39e4-43e6-bd06-b274cddf8f52" />
+
+## Data management
+
+<img width="859" height="666" alt="diagramme gestion des données" src="https://github.com/user-attachments/assets/856cd936-37df-4786-a101-0fb3e0f8bdcd" />
 
 ## Challenges
 
