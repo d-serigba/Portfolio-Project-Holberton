@@ -200,7 +200,7 @@ Solution : ajout d'une vérification de l'état avant le calcul.
 
 ## Future updates
 
-(Coming soon)
+Make the fourth game playable (the Hotline Miami clone)
 
 ---
 
