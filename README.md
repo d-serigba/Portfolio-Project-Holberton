@@ -201,6 +201,7 @@ Solution : ajout d'une vérification de l'état avant le calcul.
 ## Future updates
 
 (Coming soon)
+
 ---
 
 *Project developed by the C29   cohort.*
