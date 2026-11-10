@@ -178,23 +178,23 @@ Portfolio-Project-Holberton/
 
 ## Challenges
 
-- 1-Envoi des scores sans erreur visible :
+- Envoi des scores sans erreur visible :
 Problème : le score était calculé mais l'appel à l'API partait sans que rien ne remonte dans le terminal.
 Solution : ajout de print du statut et du détail de la réponse HTTP pour voir immédiatement ce que l'API renvoie.
 
-- 2-Session perdue ou mal chargée : 
+- Session perdue ou mal chargée : 
 Problème : le token était écrasé par des valeurs vides ou anciennes avant l'envoi, ce qui provoquait des 401.
 Solution : lecture et écriture du token centralisées dans un seul fichier token.json, via _charger_token et _sauvegarder_token.
 
-- 3-Erreur 422 sur la route des scores :
+- Erreur 422 sur la route des scores :
 Problème : Flask rejetait le payload (erreur 422) à cause d'un nom de champ différent de celui attendu (temps ou temps_jeu).
 Solution : alignement des noms de champs du payload sur ceux attendus par la route Flask.
 
-- 4-Score non pris en compte côté classement : 
+- Score non pris en compte côté classement : 
 Problème : les points envoyés ne s'affichaient pas dans le menu de sélection malgré une réponse 200 sur le classement.
 Solution : correction de l'URL du classement pour qu'elle corresponde à la route Flask, avec filtrage sur le jeu courant.
 
-- 5-Dépendance du score à la sauvegarde locale :
+- Dépendance du score à la sauvegarde locale :
 Problème : le calcul du score reposait sur state.etat, donc une save vide ou incomplète donnait un score faux.
 Solution : ajout d'une vérification de l'état avant le calcul.
 
