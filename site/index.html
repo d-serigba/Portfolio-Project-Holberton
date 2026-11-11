@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holberton Games</title>
+  <meta name="description" content="Holberton Games is a collection of pixel art games that pays homage to retro gaming">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #12101f;
+      --panel: #1c1833;
+      --line: #3a3366;
+      --text: #e8e6f5;
+      --muted: #a29fc4;
+      --accent: #ffd93d;
+      --accent2: #4ee1c1;
+      --danger: #ff6b8b;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "VT323", monospace;
+      font-size: 1.35rem;
+      line-height: 1.5;
+      background-image:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    h1, h2, h3, .pixel { font-family: "Press Start 2P", monospace; font-weight: 400; line-height: 1.5; }
+    a { color: var(--accent2); }
+    a:hover { color: var(--accent); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+    header.top {
+      border-bottom: 4px solid var(--line);
+      background: rgba(18,16,31,.9);
+      position: sticky; top: 0; z-index: 10;
+    }
+    header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+    .brand { font-family: "Press Start 2P", monospace; font-size: .8rem; color: var(--accent); text-decoration: none; }
+    nav a { margin-left: 16px; text-decoration: none; color: var(--text); }
+    nav a:hover { color: var(--accent); }
+
+    .hero { text-align: center; padding: 72px 0 56px; }
+    .hero h1 { font-size: clamp(1.4rem, 5vw, 2.6rem); color: var(--accent); text-shadow: 4px 4px 0 #7a4cff; margin: 0 0 24px; }
+    .hero p { max-width: 640px; margin: 0 auto 32px; color: var(--muted); font-size: 1.5rem; }
+    .blink { animation: blink 1.2s steps(2, start) infinite; }
+    @keyframes blink { to { visibility: hidden; } }
+    @media (prefers-reduced-motion: reduce) { .blink { animation: none; } html { scroll-behavior: auto; } }
+
+    .btn {
+      display: inline-block; margin: 6px;
+      font-family: "Press Start 2P", monospace; font-size: .7rem;
+      padding: 14px 18px; text-decoration: none;
+      background: var(--accent); color: #12101f;
+      border: 4px solid #12101f; box-shadow: 4px 4px 0 var(--line);
+    }
+    .btn:hover { background: var(--accent2); color: #12101f; }
+    .btn.alt { background: var(--panel); color: var(--text); border-color: var(--line); }
+    .btn.alt:hover { background: var(--line); color: var(--text); }
+
+    section { padding: 40px 0; }
+    section > .wrap > h2 { font-size: 1rem; color: var(--accent2); margin: 0 0 24px; }
+    section > .wrap > h2::before { content: "> "; color: var(--accent); }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .card { background: var(--panel); border: 4px solid var(--line); padding: 16px; }
+    .card h3 { font-size: .75rem; margin: 0 0 10px; color: var(--accent); }
+    .card p { margin: 0; color: var(--muted); }
+    .tag {
+      display: inline-block; margin-top: 12px;
+      font-family: "Press Start 2P", monospace; font-size: .55rem;
+      padding: 6px 8px; border: 2px solid currentColor;
+    }
+    .tag.ready { color: var(--accent2); }
+    .tag.wip { color: var(--accent); }
+    .tag.soon { color: var(--danger); }
+
+    .shot {
+      aspect-ratio: 16 / 9; display: grid; place-items: center; text-align: center;
+      background: repeating-linear-gradient(45deg, #1c1833, #1c1833 12px, #211c3d 12px, #211c3d 24px);
+      border: 4px dashed var(--line); color: var(--muted); padding: 12px;
+    }
+    .shot img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+    /* Images placed directly in the grid (or in a figure) are forced into a 16:9 frame */
+    .grid > *, .grid figure { min-width: 0; }
+    .grid > img, .grid figure img {
+      display: block; width: 100%; max-width: 100%; height: auto;
+      aspect-ratio: 16 / 9; object-fit: cover; image-rendering: pixelated;
+      border: 4px solid var(--line); background: var(--panel);
+    }
+    .grid figure { margin: 0; }
+    .grid figcaption { color: var(--muted); font-size: 1.1rem; margin-top: 6px; }
+
+    .stack { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .stack ul { margin: 0; padding-left: 20px; color: var(--muted); }
+    .stack li strong { color: var(--text); font-weight: 400; }
+
+    pre {
+      background: #0b0916; border: 4px solid var(--line);
+      padding: 16px; overflow-x: auto; margin: 12px 0 24px;
+      font-family: "VT323", monospace; font-size: 1.25rem; color: var(--accent2);
+    }
+    ol.steps { padding-left: 24px; }
+    ol.steps li { margin-bottom: 8px; }
+    code { color: var(--accent); }
+    .note { border-left: 6px solid var(--accent); background: var(--panel); padding: 12px 16px; color: var(--muted); }
+
+    footer { border-top: 4px solid var(--line); margin-top: 40px; padding: 28px 0; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#top">HOLBERTON GAMES</a>
+      <nav aria-label="Main navigation">
+        <a href="#games">Games</a>
+        <a href="#team">Team</a>
+        <a href="#tech">Tech</a>
+        <a href="#run">Run it</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap hero">
+      <h1>HOLBERTON<br>GAMES</h1>
+      <p>Holberton Games is a collection of pixel art games that pays homage to retro gaming</p>
+      <p class="pixel blink" style="font-size:.7rem;color:var(--accent);">PRESS START</p>
+      <a class="btn" href="https://github.com/d-serigba/Portfolio-Project-Holberton/tree/security">View the code</a>
+      <a class="btn alt" href="#run">Run it locally</a>
+    </div>
+
+    <section id="about">
+      <div class="wrap">
+        <h2>About</h2>
+        <div class="card">
+          <p>Holberton Games is a web application designed to compile a collection of retro games developed as part of the C29 cohort portfolio project, the primary objective is to build a complete, functional gaming platform that integrates gameplay directly into the browser that can handles registration, login and scores and a hub that lists the available games. Each game opens as a Pygame window already connected to the player's account.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="games">
+      <div class="wrap">
+        <h2>Games</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Arnaud's Bizarre Adventure</h3>
+            <p>A Zelda-like adventure game.</p>
+            <span class="tag ready">PLAYABLE</span>
+          </article>
+          <article class="card">
+            <h3>Metroidvania</h3>
+            <p>An exploration game inspired by Metroid and Castlevania.</p>
+            <span class="tag ready">PLAYABLE</span>
+          </article>
+          <article class="card">
+            <h3>Versus Fighting</h3>
+            <p>A combat game inspired by fighting classics.</p>
+            <span class="tag ready">PLAYABLE</span>
+          </article>
+          <article class="card">
+            <h3>Hotline Miami Clone</h3>
+            <p>A top-down action game.</p>
+            <span class="tag wip">IN PROGRESS</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens">
+      <div class="wrap">
+        <h2>Screenshots</h2>
+        <div class="grid">
+          <!--
+            To add a real screenshot:
+            1. Put the image in site/assets/ (for example site/assets/home.png)
+            2. Replace the placeholder content below with:
+               <img src="assets/home.png" alt="Holberton Games home page">
+          -->
+          <img src="zelda_like.PNG" alt="Zelda like">
+          <img src="metroidvania.png" alt="Metroidvania">
+          <img src="versus_fighting.png" alt="Versus Fighting">
+        </div>
+      </div>
+    </section>
+
+    <section id="team">
+      <div class="wrap">
+        <h2>Team</h2>
+        <div class="grid">
+          <div class="card"><h3>David Dufont</h3><p>Backend Developer</p></div>
+          <div class="card"><h3>Dylan Serigba</h3><p>Frontend Developer</p></div>
+          <div class="card"><h3>Yonnhi Marcellus</h3><p>Security Developer</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tech">
+      <div class="wrap">
+        <h2>Tech stack</h2>
+        <div class="stack">
+          <div class="card">
+            <h3>Frontend</h3>
+            <ul>
+              <li><strong>HTML / CSS / JavaScript</strong>: web interface and calls to the API</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Backend and tools</h3>
+            <ul>
+              <li><strong>Python 3.12</strong>: core language</li>
+              <li><strong>Flask</strong>: backend framework</li>
+              <li><strong>Pygame</strong>: game engine</li>
+              <li><strong>SQLite and SQLAlchemy</strong>: local database and ORM</li>
+              <li><strong>MySQL (PyMySQL)</strong>: optional storage</li>
+              <li><strong>Flask-JWT-Extended</strong>: user authentication</li>
+              <li><strong>Flask-CORS</strong>: frontend and backend communication</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="run">
+      <div class="wrap">
+        <h2>Run it locally</h2>
+        <p class="note">The games are Pygame desktop windows and the API is a Flask server, so the platform runs on your machine, not on this page. The launcher targets Windows 10 / 11.</p>
+        <ol class="steps">
+          <li>Install <strong>Python 3.12</strong> with the <code>py</code> launcher, and <strong>Git</strong>.</li>
+          <li>Clone the project and install the dependencies:</li>
+        </ol>
+        <pre>git clone https://github.com/d-serigba/Portfolio-Project-Holberton.git
+cd Portfolio-Project-Holberton
+py -3.12 -m pip install -r docs/api/requirements.txt</pre>
+        <ol class="steps" start="3">
+          <li>Double-click <code>launch_hub.bat</code> at the root of the project.</li>
+          <li>Open <code>http://127.0.0.1:5000</code> in your browser, create an account and pick a game.</li>
+        </ol>
+        <p><a href="https://github.com/d-serigba/Portfolio-Project-Holberton/blob/security/README.md">Read the full README</a> for troubleshooting.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p class="pixel" style="font-size:.6rem;">PROJECT DEVELOPED BY THE C29 COHORT</p>
+      <p><a href="https://github.com/d-serigba/Portfolio-Project-Holberton">GitHub repository</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
