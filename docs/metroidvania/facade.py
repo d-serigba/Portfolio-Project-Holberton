@@ -24,8 +24,9 @@ class Facade:
 
     ZONE_DEPART = "zone_a"
 
-    def __init__(self):
+    def __init__(self, pseudo=None):
         self._historique = []  # pile des zones visitées
+
         # ── Gestionnaire de zones ──────────────────────────────
         self.zones      = GestionnaireZones()
         spawn           = self.zones.charger(self.ZONE_DEPART)
@@ -33,8 +34,10 @@ class Facade:
         # ── Joueur ────────────────────────────────────────────
         self.arnaud     = Arnaud(*spawn)
 
-        self.state      = StateManager()
-        self.state.charger()
+        # ── Sauvegarde liée au pseudo ─────────────────────────
+        self.pseudo_joueur = pseudo
+        self.state         = StateManager(pseudo=pseudo)
+        self.state.charger(pseudo)
         self.state.appliquer(self.arnaud)
 
         # ── Caméra ────────────────────────────────────────────
@@ -43,23 +46,22 @@ class Facade:
 
         # ── États ─────────────────────────────────────────────
         self.game_over      = False
-        self.en_transition  = False   # True pendant un fondu (plus tard)
+        self.en_transition  = False
         self.debug_mode     = True
 
         # ── Coyote time ───────────────────────────────────────
         self._coyote_frames = 0
         self._COYOTE_MAX    = 8
 
-        # ── API (nom_jeu explicite pour éviter le défaut "brawler") ──
+        # ── API ───────────────────────────────────────────────
         self.api            = ApiClient(nom_jeu="metroidvania")
         self.token_joueur   = None
-        self.pseudo_joueur  = None
 
         self.score          = 0
         self.ennemis_tues   = 0
         self.debut_temps    = time.time()
         self.projectiles    = pygame.sprite.Group()
-        self._cooldown_transition = 0  # frames de grâce
+        self._cooldown_transition = 0
 
     # ==========================================================
     #  UPDATE — appelé chaque frame depuis main.py
@@ -123,7 +125,7 @@ class Facade:
     def trigger_saut(self):
         if self.arnaud.au_sol or self._coyote_frames > 0:
             self.arnaud.trigger_saut()
-            self._coyote_frames = 0   # consomme le coyote time
+            self._coyote_frames = 0
         elif self.arnaud.a_double_saut and self.arnaud.sauts_restants > 0:
             self.arnaud.trigger_saut()
 
@@ -150,7 +152,7 @@ class Facade:
     def _respawn_checkpoint(self):
         vies_actuelles = self.arnaud.vies
         if os.path.exists(FICHIER_SAVE):
-            self.state.charger()
+            self.state.charger(self.pseudo_joueur)
             zone_save  = self.state.zone_depart
             spawn_save = self.state.spawn_depart
             pos = self.zones.changer(zone_save)
@@ -172,7 +174,7 @@ class Facade:
         self.arnaud.hitbox.topleft   = (pos[0] + 2, pos[1])
         self.arnaud.vel_x            = 0
         self.arnaud.vel_y            = 0
-        self._cooldown_transition    = 90  # 1.5 sec
+        self._cooldown_transition    = 90
         self._historique.append(self.zones.nom_actuel or nom)
         print(f"[ZONE] → {nom} (spawn: {spawn})")
 
@@ -271,7 +273,7 @@ class Facade:
     # ==========================================================
     def recommencer(self):
         if os.path.exists(FICHIER_SAVE):
-            self.state.charger()
+            self.state.charger(self.pseudo_joueur)
             zone_save  = self.state.zone_depart
             spawn_save = self.state.spawn_depart
             spawn = self.zones.charger(zone_save)
@@ -281,6 +283,7 @@ class Facade:
             spawn = self.zones.charger(self.ZONE_DEPART)
 
         self.arnaud         = Arnaud(*spawn)
+        self.state.appliquer(self.arnaud)
         self.game_over      = False
         self._coyote_frames = 0
         print(f"[JEU] Recommencé — zone: {self.zones.nom_actuel}")
@@ -291,8 +294,6 @@ class Facade:
     def calculer_et_envoyer_score(self):
         """Calcule le score final et l'envoie à l'API."""
 
-        # On ne synchronise que si on a de vraies valeurs, pour ne pas
-        # écraser le token que l'ApiClient a déjà chargé depuis docs/token.json
         if self.token_joueur:
             self.api.token = self.token_joueur
         if self.pseudo_joueur:

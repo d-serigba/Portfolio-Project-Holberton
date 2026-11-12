@@ -25,8 +25,10 @@ def main():
     print(f"[Metroidvania] Connecté en tant que : {pseudo_joueur}")
 
     # ── LOGIQUE DU JEU ──────────────────────────────────────────
-    jeu = Facade()
-    jeu.token_joueur = token_joueur
+    # Le pseudo est passé dès la création pour que la save soit
+    # chargée pour le bon compte avant que le joueur ne soit construit.
+    jeu = Facade(pseudo=pseudo_joueur)
+    jeu.token_joueur  = token_joueur
     jeu.pseudo_joueur = pseudo_joueur
 
     en_cours = True
