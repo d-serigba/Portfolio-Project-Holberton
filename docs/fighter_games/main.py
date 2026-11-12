@@ -1,9 +1,7 @@
 import pygame
 import os
 import sys
-import json
 import time
-import random
 
 # Permet d'éviter les soucis audio sur certaines configs WSL/Linux
 os.environ["SDL_AUDIODRIVER"] = "dummy"
@@ -15,7 +13,6 @@ from login_screen import run_login
 mixer.init()
 pygame.init()
 
-# Récupération du dossier absolu où se trouve ce fichier main.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SCREEN_WIDTH = 1000
@@ -30,14 +27,14 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-# Sécurisation des chemins d'accès aux assets
+
 def get_asset_path(relative_path):
     return os.path.join(BASE_DIR, relative_path)
+
 
 # ── INITIALISATION DE L'API & CONNEXION / SSO ──────────────
 api = ApiClient(nom_jeu="brawler")
 
-# Si pas de session valide, on affiche l'écran de login
 if not api.connecte():
     resultat = run_login(screen)
     if not resultat or not resultat[0]:
@@ -60,7 +57,6 @@ magic_fx.set_volume(0.75)
 bg_image = pygame.image.load(get_asset_path("asset/images/background/background.png")).convert_alpha()
 fighter_1_sheet = pygame.image.load(get_asset_path("asset/warrior/warrior.png")).convert_alpha()
 
-# Protection contre les variations d'écriture du dossier wisard/wizard
 try:
     fighter_2_sheet = pygame.image.load(get_asset_path("asset/wizard/wizard.png")).convert_alpha()
 except FileNotFoundError:
@@ -89,19 +85,23 @@ except FileNotFoundError:
 menu_font = pygame.font.SysFont("monospace", 48, bold=True)
 small_font = pygame.font.SysFont("monospace", 28)
 
+
 def draw_text(text, font, color, x, y):
     img = font.render(text, True, color)
     screen.blit(img, (x, y))
 
+
 def draw_bg():
     scaled_bg = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(scaled_bg, (0, 0))
+
 
 def draw_health_bar(health, x, y):
     ratio = health / 100
     pygame.draw.rect(screen, WHITE, (x-2, y-2, 404, 34))
     pygame.draw.rect(screen, RED, (x, y, 400, 30))
     pygame.draw.rect(screen, YELLOW, (x, y, int(400 * ratio), 30))
+
 
 # ── ÉCRAN DE SÉLECTION MODE ────────────────────────────────
 def ecran_mode():
@@ -117,19 +117,18 @@ def ecran_mode():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                api.deconnecter()
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    api.deconnecter()
                     pygame.quit()
                     sys.exit()
                 if event.key == pygame.K_1:
-                    choix = True   # 1 joueur
+                    choix = True
                 if event.key == pygame.K_2:
-                    choix = False  # 2 joueurs
+                    choix = False
     return choix
+
 
 mode_npc = ecran_mode()
 
@@ -138,12 +137,15 @@ intro_count = 3
 last_count_update = pygame.time.get_ticks()
 score = [0, 0]
 round_over = False
+round_over_time = 0
 ROUND_OVER_COOLDOWN = 2000
+
 
 def creer_fighters():
     f1 = Fighter(1, 200, 370, False, WARRIOR_DATA, fighter_1_sheet, WARRIOR_ANIMATION_STEPS, sword_fx)
     f2 = Fighter(2, 700, 370, True, WIZARD_DATA, fighter_2_sheet, WIZARD_ANIMATION_STEPS, magic_fx)
     return f1, f2
+
 
 fighter_1, fighter_2 = creer_fighters()
 
@@ -188,27 +190,31 @@ while run:
         if pygame.time.get_ticks() - round_over_time > ROUND_OVER_COOLDOWN:
             round_over = False
             intro_count = 3
+            last_count_update = pygame.time.get_ticks()
             fighter_1, fighter_2 = creer_fighters()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                run = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            run = False
 
     pygame.display.update()
 
-# ── ENVOI SCORE API & DÉCONNEXION ──────────────────────────
-try:
+# ── ENVOI SCORE API ────────────────────────────────────────
+# On n'envoie que si au moins un round a été joué
+if score[0] + score[1] > 0:
     temps_jeu = int(time.time() - debut_temps)
     score_final = score[0] * 100
     completion = 100 if score[0] > score[1] else 50
-    api.envoyer_score(score_final, completion, temps_jeu)
-    print(f"[Brawler API] Score envoyé : {score_final} pts")
-except Exception as e:
-    print(f"[Brawler API] Impossible d'envoyer le score : {e}")
+    if not api.connecte():
+        print("[Brawler API] Pas de session, score non envoyé")
+    elif api.envoyer_score(score_final, completion, temps_jeu):
+        print(f"[Brawler API] Score envoyé : {score_final} pts")
+    else:
+        print("[Brawler API] Échec de l'envoi, regarde les messages [API] ci-dessus")
+else:
+    print("[Brawler API] Aucun round joué, rien à envoyer")
 
-api.deconnecter()
 pygame.quit()
 sys.exit()
