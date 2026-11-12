@@ -25,37 +25,49 @@ class Arnaud(pygame.sprite.Sprite):
         self.rect   = pygame.Rect(x, y, 28, 48)
         self.hitbox = pygame.Rect(x + 2, y, 24, 48)   # hitbox fine
 
+        # État neutre sûr. Ne charge aucune save : c'est main.py
+        # qui décide ensuite (reset si pas de save, sinon appliquer la save).
+        self.reset_etat_base()
+
+    # ==========================================================
+    #  ÉTAT DE RÉFÉRENCE — source unique de vérité
+    # ==========================================================
+    def reset_etat_base(self):
+        """
+        Remet Arnaud dans son état de départ d'une nouvelle partie.
+        - Appelée à l'init (état neutre temporaire).
+        - Appelée depuis main.py UNIQUEMENT si la session n'a aucune save.
+        Ne jamais l'appeler sur un compte qui a déjà une progression.
+        """
         # ── Physique ──────────────────────────────────────────
-        self.vel_x = 0       # vitesse horizontale
-        self.vel_y = 0       # vitesse verticale (+ = vers le bas)
-        self.au_sol = False  # True si Arnaud touche un sol
-        self.au_sol_precedent = False  # buffer pour coyote time
-        self.respawn_demande  = False  # True = perte de vie simple (pas game over)
-        self.saut_demande = False  # flag anti re-saut
+        self.vel_x = 0
+        self.vel_y = 0
+        self.au_sol = False
+        self.au_sol_precedent = False
+        self.respawn_demande  = False
+        self.saut_demande = False
 
         # ── État ──────────────────────────────────────────────
         self.face_a_droite  = True
         self.accroupi       = False
 
-        # ── Sauts ─────────────────────────────────────────────
-        # sauts_restants : 1 = un saut dispo, 0 = plus de saut
-        # Le double saut ajoute +1 saut supplémentaire en l'air
-        self.sauts_max       = 1   # 1 = saut simple, 2 = double saut
+        # ── Sauts : aucun double saut par défaut ──────────────
+        self.sauts_max       = 1
         self.sauts_restants  = 1
         self.a_double_saut   = False
 
         # ── Esquive ───────────────────────────────────────────
         self.en_esquive          = False
-        self.timer_esquive       = 0     # frames restantes d'esquive active
-        self.cooldown_esquive    = 0     # frames avant prochain esquive dispo
-        self.dir_esquive         = 1     # direction au moment du déclenchement
-        self.invincible_esquive  = False # pendant l'esquive = invincible
+        self.timer_esquive       = 0
+        self.cooldown_esquive    = 0
+        self.dir_esquive         = 1
+        self.invincible_esquive  = False
 
         # ── Combat ────────────────────────────────────────────
-        self.degats          = DEGATS_BASE
-        self.timer_attaque   = 0         # frames d'animation d'attaque
+        self.degats           = DEGATS_BASE
+        self.timer_attaque    = 0
         self.cooldown_attaque = 0
-        self.dir_attaque     = (1, 0)    # direction du coup
+        self.dir_attaque      = (1, 0)
 
         # ── Stats ─────────────────────────────────────────────
         self.vies            = VIES_MAX
@@ -68,7 +80,7 @@ class Arnaud(pygame.sprite.Sprite):
         # ── Invincibilité après dégâts ────────────────────────
         self.cooldown_invincible = 0
 
-        # ── Capacités débloquées ──────────────────────────────
+        # ── Capacités : TOUTES désactivées ────────────────────
         self.capacites = {
             "double_saut"  : False,
             "glissade"     : False,
@@ -78,7 +90,7 @@ class Arnaud(pygame.sprite.Sprite):
             "missiles"     : False,
         }
 
-        # Dessin initial — doit être en dernier car _dessiner lit self.cooldown_invincible
+        # Dessin : doit rester en dernier car _dessiner lit cooldown_invincible
         self.image = self._dessiner(False, False, None)
 
     # ==========================================================
@@ -324,7 +336,11 @@ class Arnaud(pygame.sprite.Sprite):
         self.degats = min(base + bonus, DEGATS_BASE + DEGATS_MAX_BONUS)
 
     def debloquer(self, capacite):
-        """Débloque une capacité. Appelée quand le joueur ramasse un power-up."""
+        """
+        Débloque UNE capacité. Appelée par un power-up ramassé en jeu
+        ou par state_manager.appliquer() pour une capacité présente dans la save.
+        Ne fait jamais de déblocage automatique.
+        """
         if capacite in self.capacites:
             self.capacites[capacite] = True
             if capacite == "double_saut":
